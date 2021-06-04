@@ -1,0 +1,57 @@
+:root {
+    --primary: #18a2d9;
+    --secondary: #00ffa3;
+    /*--ternary: #12C8B6;*/
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-size: large;
+}
+
+/* Hide input number arrows */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Override styles */
+.Toastify__toast--success {
+    background: var(--secondary) !important;
+}
+
+.Toastify__toast--info {
+    background: var(--primary) !important;
+}
+
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.loader {
+    border: 10px solid transparent;
+    border-top: 10px solid #18a2d9;
+    border-bottom: 10px solid #18a2d9;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 30px auto auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
