@@ -1,7 +1,6 @@
 import {LAMPORTS_PER_SOL} from "@solana/web3.js";
 
-export default function Amount(props: { onChange: void, max: number }) {
-
+export default function Amount(props: { onChange: void, max: number, value: number }) {
     return (
         <div className="col-span-3 sm:col-span-1">
             <label htmlFor="amount" className="block font-medium text-gray-700">
@@ -13,8 +12,8 @@ export default function Amount(props: { onChange: void, max: number }) {
                     type="number"
                     name="amount"
                     id="amount"
-                    defaultValue={4} //todo remove after testing!!!
-                    onChange={e => props.onChange(e.target.value * LAMPORTS_PER_SOL)}
+                    defaultValue={props.value}
+                    onChange={e => props.onChange(e.target.value)}
                     className="shadow-sm focus:ring-primary focus:border-primary block w-full border-gray-300 rounded-md"
                     min={0}
                     max={props.max || Number.MAX_SAFE_INTEGER}

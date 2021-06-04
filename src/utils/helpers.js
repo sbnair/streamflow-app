@@ -1,6 +1,6 @@
 import BufferLayout from "buffer-layout";
 import {INSTRUCTION_CREATE_STREAM} from "../constants/ids";
-import {LAMPORTS_PER_SOL} from "@solana/web3.js";
+import {clusterApiUrl, LAMPORTS_PER_SOL} from "@solana/web3.js";
 
 export function encodeData(formData) {
     const {amount, start, end} = formData;
@@ -14,13 +14,14 @@ export function encodeData(formData) {
         BufferLayout.nu64("amount")
     ]);
 
+    console.log('amount', amount);
     const data = Buffer.alloc(layout.span);
     layout.encode({
             instruction: INSTRUCTION_CREATE_STREAM,
             start: start,
             end: end,
             // amount: Number.MAX_SAFE_INTEGER // limited to 2^53 - 1 = 9007199254740991
-            amount: amount * LAMPORTS_PER_SOL, //todo math.trunc
+            amount: Math.trunc(amount * LAMPORTS_PER_SOL),
         },
         data
     );
@@ -32,7 +33,13 @@ export function encodeData(formData) {
     return data;
 }
 
-export function Stream(sender: string, receiver: string, amount: number, start: number, end: number, withdrawn: number) {
+export function getExplorerLink(type: string, id: string, network?: string): string {
+    network = network || clusterApiUrl('mainnet-beta');
+    return  `https://explorer.solana.com/${type}/${id}?cluster=custom&customUrl=${network}`;
+
+}
+
+export function StreamData(sender: string, receiver: string, amount: number, start: number, end: number, withdrawn: number) {
     this.sender = sender;
     this.receiver = receiver;
     this.amount = amount;
