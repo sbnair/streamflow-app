@@ -19,40 +19,25 @@ import DateTime from "./Components/DateTime";
 import Amount from "./Components/Amount";
 import Curtain from "./Components/Curtain";
 import Stream from "./Components/Stream";
-import {encodeData, StreamData, getExplorerLink} from "./utils/helpers";
+import {encodeData, StreamData, getExplorerLink, getDecodedAccountData, getStreamStatus} from "./utils/helpers";
 
 import 'react-toastify/dist/ReactToastify.css';
 import logo from './logo.png'
-import {OFFSET_AMOUNT_WITHDRAWN, PROGRAM_ID} from "./constants/ids";
+import {PROGRAM_ID} from "./constants/ids";
 import ToastrLink from "./Components/ToastrLink";
-import {DELAY_MINUTES, SOLLET_URL, AIRDROP_AMOUNT} from "./constants/constants";
+import {
+    DELAY_MINUTES,
+    SOLLET_URL,
+    AIRDROP_AMOUNT,
+    ACC_DATA_OFFSET_WITHDRAWN,
+    STREAM_STATUS_SCHEDULED, STREAM_STATUS_STREAMING, STREAM_STATUS_COMPLETE,
+} from "./constants/constants";
 import Logo from "./Components/Logo";
 
 function App() {
     const network = "http://localhost:8899"; //clusterApiUrl('localhost');
     const now = new Date();
     const pda = Keypair.generate();
-
-    // const streams = {
-    //     asdfdfasd : {
-    //         start: 1,
-    //         end: 2,
-    //         recepient: '',
-    //
-    //     },
-    //     dafs : {
-    //         start: 1,
-    //         end: 2,
-    //         recepient: '',
-    //
-    //     },
-    //     efefw : {
-    //         start: 1,
-    //         end: 2,
-    //         recepient: '',
-    //
-    //     }
-    // }
 
     const [providerUrl, setProviderUrl] = useState(SOLLET_URL);
     const [selectedWallet, setSelectedWallet] = useState(undefined);
@@ -68,7 +53,7 @@ function App() {
     const [streams, setStreams] = useState(localStorage.streams ? JSON.parse(localStorage.streams) : {})
 
     const connection = useMemo(() => new Connection(network), [network]);
-    const urlWallet = useMemo(() => new Wallet(providerUrl, network), [providerUrl, network,]);
+    const urlWallet = useMemo(() => new Wallet(providerUrl, network), [providerUrl, network]);
 
     useEffect(() => {
         if (selectedWallet) {
@@ -96,9 +81,14 @@ function App() {
             if (streams.hasOwnProperty(id)) {
                 connection.getAccountInfo(new PublicKey(id)).then(result => {
                     if (result?.data) {
-                        streams[id].withdrawn = Number(result.data.readBigUInt64LE(OFFSET_AMOUNT_WITHDRAWN)) / LAMPORTS_PER_SOL; //bigint to number conversion
+                        const data = getDecodedAccountData(result.data)
+                        streams[id].withdrawn = data.withdrawn / LAMPORTS_PER_SOL;
+
+                        streams[id].status = data.status;
+                        console.log('decoded data', id, data)
+                        console.log('stream data', id, streams[id])
                     } else {
-                        //should we delete the stream from user streams?
+                        // should we delete the stream?
                         // delete streams[id];
                     }
                 })
@@ -108,7 +98,7 @@ function App() {
         localStorage.setItem('streams', JSON.stringify(streams))
     }, [connection, streams])
 
-    //todo view specific stream by reading from window.location.href
+    //TODO view specific stream by reading from window.location.href
 
     function requestAirdrop() {
         setLoading(true);
@@ -123,43 +113,54 @@ function App() {
         }, 3000)
     }
 
+    //todo additional form validation
+    function setFormState(e) {
+        const [name, value] = e.target;
+        switch (name) {
+            case "account":
+                if (!PublicKey.isOnCurve((new PublicKey(value)).toBytes())) {
+                    e.target.setCustomValidity('Invalid receiver. We just saved your money, yay!')
+                    e.target.reportValidity();
+                } else {
+                    setReceiver(value);
+                }
+                break;
+            case "end":
+                break;
+            default:
+
+        }
+    }
+
     async function submit(e) {
+        const end_time_input = document.getElementById('end_time')
         e.preventDefault();
         e.target.reportValidity();
 
         const start = getUnixTime(new Date(startDate + "T" + startTime));
         let end = getUnixTime(new Date(endDate + "T" + endTime));
 
-        //todo check if this does anything at all
-        if (!PublicKey.isOnCurve(selectedWallet.publicKey)) {
-            document.getElementById('receiver').setCustomValidity('Invalid receiver. We just saved your money, yay!')
-            return;
-        }
-
         console.log('start %s, end %s', start, end);
 
-        if (end < start) {
-            document.getElementById('end_time').setCustomValidity("Err... End time before start time?")
-            return;
-        }
+        // end_time_input.setCustomValidity('');
+        // end_time_input.reportValidity();
+        // if (end < start) {
+        //     end_time_input.setCustomValidity("Err... End time before start time?")
+        //     end_time_input.reportValidity();
+        //     return false;
+        // }
 
         // Make sure that end time is always AFTER start time
-        end += end === start ? 1 : 0;
+        if (end <= start) {
+            end = start + 1;
+        }
 
         const instruction = createInstruction({amount: amount, start: start, end: end, receiver: receiver})
         const tx = new Transaction().add(instruction);
         setLoading(true);
         await sendTransaction(tx);
-        streams[pda.publicKey.toBase58()] = new StreamData(
-            selectedWallet.publicKey.toBase58(),
-            receiver,
-            amount,
-            start,
-            end,
-            0);
-        console.log('streams after tx', streams);
-        localStorage.streams = JSON.stringify(streams);
-        setStreams(streams);
+        const streamData = new StreamData(selectedWallet.publicKey.toBase58(), receiver, amount, start, end);
+        addStream(pda.publicKey.toBase58(), streamData);
     }
 
     function createInstruction(form): TransactionInstruction {
@@ -196,18 +197,25 @@ function App() {
             toast.info('Sending signature request to wallet...');
             transaction.feePayer = selectedWallet.publicKey;
             transaction.partialSign(pda);
-            let signed = await selectedWallet.signTransaction(transaction);
-            let signature = await connection.sendRawTransaction(signed.serialize());
+            const signed = await selectedWallet.signTransaction(transaction);
+            const signature = await connection.sendRawTransaction(signed.serialize());
             toast.info('Submitted transaction. Awaiting confirmation...');
-            await connection.confirmTransaction(signature, 'confirmed').then(
-                setBalance((await connection.getBalance(selectedWallet.publicKey)) / LAMPORTS_PER_SOL)
-            ); // can use 'finalized' which gives 100% certainty, but requires much longer waiting.
+            // can use 'finalized' which gives 100% certainty, but requires much longer waiting.
+            const txid = await connection.confirmTransaction(signature, 'confirmed').then(
+                () => {
+                    connection.getBalance(selectedWallet.publicKey).then(
+                        result => setBalance(result / LAMPORTS_PER_SOL)
+                    )
+                })
             const transactionUrl = `https://explorer.solana.com/tx/${signature}?cluster=custom&customUrl=${network}`;
             toast.success(<ToastrLink
                 url={transactionUrl}
                 urlText="View on explorer"
-                nonUrlText="Transaction finalized"
+                nonUrlText="Transaction confirmed!"
             />, {autoClose: 30000, closeOnClick: false});
+            //todo SHARE STREAM URL
+
+            return txid;
         } catch (e) {
             console.warn(e);
             //todo log the error somewhere for our reference
@@ -215,6 +223,18 @@ function App() {
         } finally {
             await setLoading(false);
         }
+    }
+
+    function addStream(id: string, data: StreamData) {
+        streams[id] = data;
+        localStorage.streams = JSON.stringify(streams);
+        setStreams((JSON.parse(localStorage.streams)));
+    }
+
+    function removeStream(id: string) {
+        delete streams[id];
+        localStorage.streams = JSON.stringify(streams);
+        setStreams(JSON.parse(localStorage.streams));
     }
 
     return (
@@ -225,7 +245,7 @@ function App() {
                 {connected ? (
                     <div className="mx-auto grid grid-cols-1 gap-10 max-w-lg xl:grid-cols-2 xl:max-w-5xl">
                         <div className="mb-8">
-                            <Curtain visible={loading} />
+                            <Curtain visible={loading}/>
                             <div className="mb-4">
                                 <strong>
                                     <a href={getExplorerLink('address', selectedWallet.publicKey.toBase58(), network)}
@@ -278,15 +298,11 @@ function App() {
                             {streams ? (
                                 Object.entries(streams).map(([id, data]) => (
                                     <Stream
+                                        key={id}
                                         id={id}
                                         data={data}
                                         myAddress={selectedWallet.publicKey.toBase58()}
-                                        removeStream={() => {
-                                            console.log(id);
-                                            delete streams[id];
-                                            setStreams(streams)
-                                        }}
-                                    />
+                                        removeStream={() => removeStream(id)}/>
                                 ))
                             ) : (
                                 <span>Your streams will appear here!</span>
@@ -298,8 +314,8 @@ function App() {
                         <iframe width="100%" height={270} src="https://www.youtube.com/embed/KMU0tzLwhbE"
                                 title="YouTube video player" frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen></iframe>
-                        <button type="button" onClick={(e) => setSelectedWallet(urlWallet)}
+                                allowFullScreen>&nbsp;</iframe>
+                        <button type="button" onClick={() => setSelectedWallet(urlWallet)}
                                 className="block font-bold text-xl my-5 mx-auto px-8 py-4 border bg-gradient-to-r from-primary via-primary to-primary border-transparent font-medium rounded shadow-sm text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                             Connect
                         </button>
