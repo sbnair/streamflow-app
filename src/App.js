@@ -296,7 +296,9 @@ function App() {
                         <div>
                             <strong>My Streams</strong>
                             {streams ? (
-                                Object.entries(streams).map(([id, data]) => (
+                                Object.entries(streams)
+                                    .sort(([, stream1],[,stream2])=> stream1.start - stream2.start)
+                                    .map(([id, data]) => (
                                     <Stream
                                         key={id}
                                         id={id}
