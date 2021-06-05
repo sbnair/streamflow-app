@@ -43,8 +43,8 @@ export function getDecodedAccountData(buffer: Buffer) {
     const end = buffer.readBigUInt64LE(8);
     const amount = buffer.readBigUInt64LE(16);
     const withdrawn = Number(buffer.readBigUInt64LE(24));
-    const sender = PublicKey.decode(buffer.slice(32, 64)).toBase58();
-    const recipient = PublicKey.decode(buffer.slice(64, 96)).toBase58();
+    const sender = (new PublicKey(buffer.slice(32, 64))).toBase58();
+    const recipient = (new PublicKey(buffer.slice(64, 96))).toBase58();
     const status = getStreamStatus(Number(start), Number(end), getUnixTime(new Date())) //in milliseconds
 
     return new StreamData(sender, recipient, amount, start, end, withdrawn, status);
