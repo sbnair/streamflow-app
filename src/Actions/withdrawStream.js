@@ -10,7 +10,7 @@ export default async function _withdrawStream(account_id: string, data: StreamDa
     const {receiver} = data;
     const instruction = getWithdrawStreamInstruction(account_id, receiver)
     const tx = new Transaction().add(instruction);
-    await sendTransaction(INSTRUCTION_WITHDRAW_STREAM, tx, connection, wallet, network)
+    return await sendTransaction(INSTRUCTION_WITHDRAW_STREAM, tx, connection, wallet, network)
 }
 
 function getWithdrawStreamInstruction(account_id, receiver) {

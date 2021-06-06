@@ -30,6 +30,7 @@ import Logo from "./Components/Logo";
 import _createStream from "./Actions/createStream";
 import _cancelStream from "./Actions/cancelStream";
 import _withdrawStream from "./Actions/withdrawStream";
+import ButtonPrimary from "./Components/ButtonPrimary";
 
 function App() {
     const network = "http://localhost:8899"; //clusterApiUrl('localhost');
@@ -96,36 +97,52 @@ function App() {
 
     function requestAirdrop() {
         setLoading(true);
-        //throttle requests in order to ease the network load
+        //throttle this request since we won't periodically poll to update the balance
         setTimeout(() => {
             connection.requestAirdrop(selectedWallet.publicKey, AIRDROP_AMOUNT * LAMPORTS_PER_SOL)
                 .then(() => {
                     setBalance(balance + AIRDROP_AMOUNT)
-                    toast.success("Big airdrop for you!")
+                    toast.success("Huge airdrop for you!")
                 })
             setLoading(false);
-        }, 3000)
+        }, 4000)
     }
 
     //todo additional form validation
 
-    // function setFormState(e) {
-    //     const [name, value] = e.target;
-    //     switch (name) {
-    //         case "account":
-    //             if (!PublicKey.isOnCurve((new PublicKey(value)).toBytes())) {
-    //                 e.target.setCustomValidity('Invalid receiver. We just saved your money, yay!')
-    //                 e.target.reportValidity();
-    //             } else {
-    //                 setReceiver(value);
-    //             }
-    //             break;
-    //         case "end":
-    //             break;
-    //         default:
-    //
-    //     }
-    // }
+    function validate(element) {
+        const {name, value} = element;
+        let start, end;
+
+
+        let msg = "";
+
+        switch (name) {
+            case "account":
+                msg = PublicKey.isOnCurve((new PublicKey(value)).toBytes()) ? "Invalid address. We just saved your money, yay!" : "";
+                break;
+            case "start":
+                start = new Date(value + "T" + startTime);
+                msg =  start < new Date() ? "Cannot start the stream in the past." : "";
+                break;
+            case "start_time":
+                start = new Date(startDate + "T" + value);
+                console.log('now' , new Date())
+                msg =  start < new Date() ? "Cannot start the stream in the past." : "";
+                break;
+            case "end":
+                msg = new Date(value) < new Date(startDate) ? "Umm... end date before the start date?" : "";
+                break;
+            case "end_time":
+                start = new Date(startDate + "T" + startTime);
+                const end = new Date(endDate + "T" + value);
+                msg = end < start ? "Err... end time before the start time?" : "";
+                break;
+            default:
+        }
+        // console.log('end %s start %s now %s msg %s', end, start, (new Date()), msg)
+        element.setCustomValidity(msg);
+    }
 
     async function createStream(e) {
         e.preventDefault();
@@ -133,28 +150,18 @@ function App() {
 
         const start = getUnixTime(new Date(startDate + "T" + startTime));
         let end = getUnixTime(new Date(endDate + "T" + endTime));
-
-        console.log('start %s, end %s', start, end);
-
-
-        // end_time_input.setCustomValidity('');
-        // end_time_input.reportValidity();
-        // if (end < start) {
-        //     end_time_input.setCustomValidity("Err... End time before start time?")
-        //     end_time_input.reportValidity();
-        //     return false;
-        // }
+        //console.log('start %s, end %s', start, end);
 
         // Make sure that end time is always AFTER start time
-        if (end <= start) {
+        if (end === start) {
             end = start + 1;
         }
 
         setLoading(true);
         const data = new StreamData(selectedWallet.publicKey.toBase58(), receiver, amount, start, end);
-        await _createStream(data, connection, selectedWallet, network, pda)
+        const success = await _createStream(data, connection, selectedWallet, network, pda)
         setLoading(false);
-        addStream(pda.publicKey.toBase58(), data);
+        if (success) addStream(pda.publicKey.toBase58(), data);
     }
 
     async function withdrawStream(id: string) {
@@ -166,8 +173,11 @@ function App() {
 
     async function cancelStream(id: string) {
         if (await _swal()) {
+            const {start, end, amount} = streams[id];
             const now = new Date();
+            const withdrawn = getStreamed(start, end, amount);
             await _cancelStream(id, streams[id], connection, selectedWallet, network)
+            streams[id].withdrawn = withdrawn;
             streams[id].canceled_at = getUnixTime(now);
             streams[id].status = STREAM_STATUS_CANCELED;
             updateStreams()
@@ -229,27 +239,31 @@ function App() {
                                     <DateTime
                                         title="start"
                                         date={startDate}
-                                        updateDate={e => setStartDate(e.target.value)}//todo update, pass to child
+                                        updateDate={e => {setStartDate(e.target.value); validate(e.target)}}//todo update, pass to child
                                         time={startTime}
-                                        updateTime={e => setStartTime(e.target.value)}
+                                        updateTime={e => {setStartTime(e.target.value); validate(e.target)}}
                                     />
                                     <DateTime
                                         title="end"
                                         date={endDate}
-                                        updateDate={e => setEndDate(e.target.value)}
+                                        updateDate={e => {
+                                            setEndDate(e.target.value);
+                                            validate(e.target)
+                                        }}
                                         time={endTime}
-                                        updateTime={e => setEndTime(e.target.value)}/>
+                                        updateTime={e => {
+                                            setEndTime(e.target.value);
+                                            validate(e.target)
+                                        }}/>
                                 </div>
-                                <button type="submit"
-                                        className="mt-8 block font-bold mx-auto place-self-center items-center px-8 py-4 border border-transparent text-2xl rounded-md shadow-sm text-white bg-primary hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-                                    Stream!
-                                </button>
+                                <ButtonPrimary text="Stream!" action={() => {
+                                }} submit={true}/>
                             </form>
                         </div>
                         {/*move to different file*/}
                         <div>
-                            <strong className="text-white">My Streams</strong>
-                            {streams ? (
+                            <strong className="text-white text-center text-2xl block">My Streams</strong>
+                            {Object.keys(streams).length > 0 ? (
                                 Object.entries(streams)
                                     .sort(([, stream1], [, stream2]) => stream2.start - stream1.start)
                                     .map(([id, data]) => (
@@ -263,8 +277,10 @@ function App() {
                                             removeStream={() => removeStream(id)}/>
                                     ))
                             ) : (
-                                <div className="mx-auto my-10 text-white">
-                                    <span>Your streams will appear here!</span>
+                                <div className="mx-auto my-10 text-white text-center">
+                                    <span>Your streams will appear here.</span>
+                                    <br/>
+                                    <span>Start streaming!</span>
                                 </div>
                             )}
                         </div>
@@ -275,10 +291,7 @@ function App() {
                                 title="YouTube video player" frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen>&nbsp;</iframe>
-                        <button type="button" onClick={() => setSelectedWallet(urlWallet)}
-                                className="block font-bold text-xl my-5 mx-auto px-8 py-4 border bg-gradient-to-r from-primary via-primary to-primary border-transparent font-medium rounded shadow-sm text-white hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                            Connect
-                        </button>
+                        <ButtonPrimary text="Connect" action={() => setSelectedWallet(urlWallet)}/>
                     </div>
                 )}
             </div>

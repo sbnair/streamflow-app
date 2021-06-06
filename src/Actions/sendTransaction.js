@@ -28,16 +28,18 @@ export default async function sendTransaction(type: number, transaction: Transac
             nonUrlText="Transaction confirmed!"
         />, {autoClose: 30000, closeOnClick: false});
 
-        if (INSTRUCTION_CREATE_STREAM) {
+        if (type === INSTRUCTION_CREATE_STREAM) {
             swal({
                 icon: "success",
                 title: "Stream created!",
                 content: "Share it: " + window.location.origin + pda.publicKey.toBase58()
             });
         }
+        return true;
     } catch (e) {
         console.warn(e);
         //todo log the error somewhere for our reference
         toast.error('Error: ' + e.message);
+        return false;
     }
 }

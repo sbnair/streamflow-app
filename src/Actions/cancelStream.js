@@ -10,7 +10,7 @@ export default async function _cancelStream(account_id: string, data: StreamData
     const {sender} = data;
     const instruction = getCancelStreamInstruction(account_id, sender)
     const tx = new Transaction().add(instruction);
-    await sendTransaction(INSTRUCTION_CANCEL_STREAM, tx, connection, wallet, network)
+    return await sendTransaction(INSTRUCTION_CANCEL_STREAM, tx, connection, wallet, network)
 }
 
 function getCancelStreamInstruction(account_id, sender) {

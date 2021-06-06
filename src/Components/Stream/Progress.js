@@ -6,9 +6,9 @@ export default function Progress(props: { title: string, value: number, max: num
         <>
             <dt>{title}</dt>
                 <input type="range" dir={rtl ? "rtl" : "ltr"}
-                       min={0} max={props.max}
-                    value={props.value} readOnly={true}/>
-                <label className="ml-2 text-right">◎{value}<small className="text-gray-400">/{max}</small></label>
+                       min={0} max={max}
+                    value={value} readOnly={true}/>
+                <label className="ml-2 text-right truncate">◎{value}<small className="text-gray-400">/{max}</small></label>
         </>
     )
 }
