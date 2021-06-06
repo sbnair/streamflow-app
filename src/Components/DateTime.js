@@ -5,7 +5,7 @@ export default function DateTime(props: { title: string, date: string, updateDat
         <>
             <div className="col-span-3 sm:col-span-1">
                 <label htmlFor={props.title}
-                       className="block font-medium text-gray-700 capitalize">{props.title}</label>
+                       className="block font-medium text-gray-100 capitalize">{props.title}</label>
                 <div className="mt-1">
                     <input type="date" name={props.title} id={props.title}
                            value={props.date}
@@ -18,7 +18,7 @@ export default function DateTime(props: { title: string, date: string, updateDat
             </div>
             <div className="col-span-2 sm:col-span-1">
                 <label htmlFor={props.title + `_time`}
-                       className="block font-medium text-gray-700 capitalize">{props.title} time</label>
+                       className="block font-medium text-gray-100 capitalize">{props.title} time</label>
                 <div className="mt-1">
                     <input type="time" name={props.title + `_time`} id={props.title + `_time`}
                            value={props.time}

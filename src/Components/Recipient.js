@@ -1,7 +1,7 @@
 export default function Recipient(props: { onChange: void, value: string }) {
     return (
         <div className="col-span-full">
-            <label htmlFor="account" className="block font-medium text-gray-700">
+            <label htmlFor="account" className="block font-medium text-gray-100">
                 Recipient Account
             </label>
             <div className="mt-1">

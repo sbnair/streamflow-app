@@ -25,11 +25,11 @@ export default function Stream(props: { data: StreamData, myAddress: string, rem
     });
 
     return (
-        <dl className={`my-4 grid gap-y-4 gap-x-2 grid-cols-3 p-4 bg-white shadow rounded-lg`}>
+        <dl className={`transition my-4 grid gap-y-4 gap-x-2 grid-cols-3 p-4 bg-${STREAM_STATUS_COLOR[status]}-50 shadow rounded-lg`}>
             <div className="col-span-full">
                 <Badge className="inline" type={status} color={STREAM_STATUS_COLOR[status]}/>
                 <button onClick={removeStream}
-                        className="p-1.5 h-6 w-6 bg-gray-50 float-right align-top rounded-sm hover:bg-gray-200 focus:outline-none focus:ring-1">
+                        className={`p-1.5 h-6 w-6 float-right align-top rounded-sm hover:bg-${STREAM_STATUS_COLOR[status]}-200 focus:outline-none focus:ring-1`}>
                     <XIcon className="float-right w-3 h-3"/>
                 </button>
             </div>

@@ -1,7 +1,7 @@
 export default function SelectToken() {
     return (
         <div className="col-span-2 sm:col-span-1">
-            <label htmlFor="token" className="block font-medium text-gray-700">
+            <label htmlFor="token" className="block font-medium text-gray-100">
                 Token
             </label>
             <select

@@ -1,7 +1,7 @@
 export default function Amount(props: { onChange: void, max: number, value: number }) {
     return (
         <div className="col-span-3 sm:col-span-1">
-            <label htmlFor="amount" className="block font-medium text-gray-700">
+            <label htmlFor="amount" className="block font-medium text-gray-100">
                 Amount
             </label>
             <div className="mt-1">

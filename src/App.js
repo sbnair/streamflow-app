@@ -200,7 +200,7 @@ function App() {
                     <div className="mx-auto grid grid-cols-1 gap-10 max-w-lg xl:grid-cols-2 xl:max-w-5xl">
                         <div className="mb-8">
                             <Curtain visible={loading}/>
-                            <div className="mb-4">
+                            <div className="mb-4 text-white">
                                 <strong>
                                     <a href={getExplorerLink('address', selectedWallet.publicKey.toBase58(), network)}
                                        target="_blank" rel="noopener noreferrer">
@@ -208,11 +208,11 @@ function App() {
                                     </a></strong>
                                 <span className="block truncate">{selectedWallet.publicKey.toBase58()}</span>
                             </div>
-                            <div className="mb-4 clearfix">
+                            <div className="mb-4 clearfix text-white">
                                 <strong className="block">Balance:</strong>
                                 <span>◎{balance}</span>
                                 <button type="button" onClick={() => selectedWallet.disconnect()}
-                                        className="float-right items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                        className="float-right items-center px-2.5 py-1.5 shadow-sm text-xs font-medium rounded bg-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                                     Disconnect
                                 </button>
                                 <button type="button" onClick={() => requestAirdrop()}
@@ -248,7 +248,7 @@ function App() {
                         </div>
                         {/*move to different file*/}
                         <div>
-                            <strong>My Streams</strong>
+                            <strong className="text-white">My Streams</strong>
                             {streams ? (
                                 Object.entries(streams)
                                     .sort(([, stream1], [, stream2]) => stream1.start - stream2.start)
@@ -263,7 +263,9 @@ function App() {
                                             removeStream={() => removeStream(id)}/>
                                     ))
                             ) : (
-                                <span>Your streams will appear here!</span>
+                                <div className="mx-auto my-10 text-white">
+                                    <span>Your streams will appear here!</span>
+                                </div>
                             )}
                         </div>
                     </div>
