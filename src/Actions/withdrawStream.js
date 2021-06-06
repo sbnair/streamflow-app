@@ -47,8 +47,8 @@ function encodeInstructionData() {
     layout.encode({
             instruction: INSTRUCTION_WITHDRAW_STREAM,
             // amount: Number.MAX_SAFE_INTEGER // limited to 2^53 = 9007199254740992
-            //TODO - allow withdrawal of arbitrary (streamed) amount
-            amount: 1,// argument ignored for now, whole streamed amount is withdrawn.
+            //TODO - allow withdrawal of arbitrary (allowed) amount
+            amount: 0,// 0 = whole available amount is withdrawn.
         },
         data
     );

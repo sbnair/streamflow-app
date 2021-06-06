@@ -17,7 +17,16 @@ import DateTime from "./Components/DateTime";
 import Amount from "./Components/Amount";
 import Curtain from "./Components/Curtain";
 import Stream, {getStreamed} from "./Components/Stream";
-import {StreamData, getExplorerLink, getDecodedAccountData, _swal} from "./utils/helpers";
+import {
+    StreamData,
+    getExplorerLink,
+    getDecodedAccountData,
+    _swal,
+    copyToClipboard,
+    streamCreated
+} from "./utils/helpers";
+
+import swal from "sweetalert";
 
 import 'react-toastify/dist/ReactToastify.css';
 import logo from './logo.png'
@@ -123,12 +132,12 @@ function App() {
                 break;
             case "start":
                 start = new Date(value + "T" + startTime);
-                msg =  start < new Date() ? "Cannot start the stream in the past." : "";
+                msg = start < new Date() ? "Cannot start the stream in the past." : "";
                 break;
             case "start_time":
                 start = new Date(startDate + "T" + value);
-                console.log('now' , new Date())
-                msg =  start < new Date() ? "Cannot start the stream in the past." : "";
+                console.log('now', new Date())
+                msg = start < new Date() ? "Cannot start the stream in the past." : "";
                 break;
             case "end":
                 msg = new Date(value) < new Date(startDate) ? "Umm... end date before the start date?" : "";
@@ -161,7 +170,10 @@ function App() {
         const data = new StreamData(selectedWallet.publicKey.toBase58(), receiver, amount, start, end);
         const success = await _createStream(data, connection, selectedWallet, network, pda)
         setLoading(false);
-        if (success) addStream(pda.publicKey.toBase58(), data);
+        if (success) {
+            streamCreated(pda.publicKey.toBase58())
+            addStream(pda.publicKey.toBase58(), data);
+        }
     }
 
     async function withdrawStream(id: string) {
@@ -201,6 +213,11 @@ function App() {
         setStreams((JSON.parse(localStorage.streams)));
     }
 
+    function updateStreamStatus(id, status) {
+        streams[id].status = status;
+        updateStreams()
+    }
+
     return (
         <div>
             <Banner/>
@@ -211,7 +228,7 @@ function App() {
                         <div className="mb-8">
                             <Curtain visible={loading}/>
                             <div className="mb-4 text-white">
-                                <strong>
+                                <strong className="text-gray-400 hover:text-white">
                                     <a href={getExplorerLink('address', selectedWallet.publicKey.toBase58(), network)}
                                        target="_blank" rel="noopener noreferrer">
                                         My Wallet Account <ExternalLinkIcon className="ml-1 w-4 h-4 inline"/>:
@@ -239,9 +256,15 @@ function App() {
                                     <DateTime
                                         title="start"
                                         date={startDate}
-                                        updateDate={e => {setStartDate(e.target.value); validate(e.target)}}//todo update, pass to child
+                                        updateDate={e => {
+                                            setStartDate(e.target.value);
+                                            validate(e.target)
+                                        }}//todo update, pass to child
                                         time={startTime}
-                                        updateTime={e => {setStartTime(e.target.value); validate(e.target)}}
+                                        updateTime={e => {
+                                            setStartTime(e.target.value);
+                                            validate(e.target)
+                                        }}
                                     />
                                     <DateTime
                                         title="end"
@@ -268,6 +291,7 @@ function App() {
                                     .sort(([, stream1], [, stream2]) => stream2.start - stream1.start)
                                     .map(([id, data]) => (
                                         <Stream
+                                            onStatusUpdate={(status) => updateStreamStatus(id, status)}
                                             onWithdraw={() => withdrawStream(id)}
                                             onCancel={() => cancelStream(id)}
                                             key={id}

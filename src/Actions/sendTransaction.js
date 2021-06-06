@@ -3,7 +3,6 @@ import {Connection, Keypair, Transaction} from "@solana/web3.js";
 import ToastrLink from "../Components/ToastrLink";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {INSTRUCTION_CREATE_STREAM} from "../constants/constants";
-import swal from 'sweetalert'
 
 export default async function sendTransaction(type: number, transaction: Transaction, connection: Connection, wallet: Wallet, network?: string, pda?: Keypair) {
     try {
@@ -27,14 +26,6 @@ export default async function sendTransaction(type: number, transaction: Transac
             urlText="View on explorer"
             nonUrlText="Transaction confirmed!"
         />, {autoClose: 30000, closeOnClick: false});
-
-        if (type === INSTRUCTION_CREATE_STREAM) {
-            swal({
-                icon: "success",
-                title: "Stream created!",
-                content: "Share it: " + window.location.origin + pda.publicKey.toBase58()
-            });
-        }
         return true;
     } catch (e) {
         console.warn(e);

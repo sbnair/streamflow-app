@@ -5,11 +5,16 @@ import Progress from "./Stream/Progress";
 import {useEffect, useState} from "react";
 import {StreamData} from "../utils/helpers";
 import {XIcon} from "@heroicons/react/outline";
-import {STREAM_STATUS_CANCELED, STREAM_STATUS_COLOR, STREAM_STATUS_STREAMING} from "../constants/constants";
+import {
+    STREAM_STATUS_CANCELED,
+    STREAM_STATUS_COLOR, STREAM_STATUS_COMPLETE,
+    STREAM_STATUS_SCHEDULED,
+    STREAM_STATUS_STREAMING
+} from "../constants/constants";
 
-export default function Stream(props: { data: StreamData, myAddress: string, id: string, removeStream: void, onCancel: void, onWithdraw: void }) {
-    const {start, end, withdrawn, amount, receiver, status, sender} = props.data;
-    const {myAddress, removeStream, onCancel, onWithdraw, id} = props;
+export default function Stream(props: { data: StreamData, myAddress: string, id: string, removeStream: void, onStatusUpdate: void, onCancel: void, onWithdraw: void }) {
+    const {start, end, withdrawn, amount, receiver, sender, status} = props.data;
+    const {myAddress, removeStream, onStatusUpdate, onCancel, onWithdraw, id} = props;
     const showButton = status === STREAM_STATUS_STREAMING;
 
     const [streamed, setStreamed] = useState(getStreamed(start, end, amount))
@@ -19,9 +24,12 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
         const interval = setInterval(() => {
             setStreamed(getStreamed(start, end, amount));
             setAvailable(streamed - withdrawn);
+            const tmpStatus = updateStatus(status, start, end);
+            if (tmpStatus !== status) {
+                onStatusUpdate(tmpStatus)
+            }
             //  console.log('streamed %s, withdrawn %s, available %s', streamed, withdrawn, available);
         }, 1000)
-
         return () => clearInterval(interval);
     });
 
@@ -59,7 +67,7 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
                         </button>)}
                     </>)}
                     {myAddress === sender && showButton && (<button onClick={onCancel}
-                                                      className="rounded-md text-sm bg-red-400 hover:bg-red-600 active:bg-red text-white py-1 px-2">
+                                                                    className="rounded-md text-sm bg-red-400 hover:bg-red-600 active:bg-red text-white py-1 px-2">
                         Cancel</button>)}
                 </>)}
         </dl>
@@ -74,4 +82,15 @@ export function getStreamed(start: number, end: number, amount: number, timestam
 
     //  console.log('timestamp %s, start %s, end %s', timestamp, start, end);
     return (timestamp - start) / (end - start) * amount;
+}
+
+function updateStatus(status: string, start: number, end: number) {
+    const now = getUnixTime(new Date());
+    if (status === STREAM_STATUS_SCHEDULED && now >= start) {
+        return STREAM_STATUS_STREAMING;
+    } else if (status === STREAM_STATUS_STREAMING && now >= end) {
+        return STREAM_STATUS_COMPLETE;
+    } else {
+        return status;
+    }
 }

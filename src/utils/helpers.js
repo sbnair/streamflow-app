@@ -50,3 +50,40 @@ export function StreamData(sender: string, receiver: string, amount: number, sta
 export function _swal(): Promise {
     return swal({text: "Are you sure?", icon: "warning", buttons: true})
 }
+
+export function copyToClipboard(value): void {
+    const el = document.createElement('textarea');
+    el.value = value;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+}
+
+export function streamCreated(id: string) {
+    const url = window.location.origin + "/" + id;
+    swal({
+        button: "Copy Stream URL",
+        icon: 'success',
+        title: "Stream created!",
+        //sweet alert accepts pure HTML Node, so some wrapping must be done https://sweetalert.js.org/guides/#using-dom-nodes-as-content
+        content:
+            {
+                element: "a",
+                attributes: {
+                    className: "text-primary block truncate max-w-full",
+                    href: url,
+                    target: "_blank",
+                    innerHTML: url
+                }
+            }
+    }).then((clicked) => {
+        if (clicked) {
+            copyToClipboard(url);
+            swal("Link copied to clipboard!", "Send it to the recipient!", "success")
+        }
+    })
+}
