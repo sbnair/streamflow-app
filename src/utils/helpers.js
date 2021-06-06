@@ -4,15 +4,15 @@ import {
     STREAM_STATUS_SCHEDULED,
     STREAM_STATUS_STREAMING
 } from "../constants/constants";
-import {clusterApiUrl, PublicKey} from "@solana/web3.js";
+import {clusterApiUrl, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {getUnixTime} from "date-fns";
 import swal from "sweetalert";
 
 export function getDecodedAccountData(buffer: Buffer) {
-    const start = buffer.readBigUInt64LE(0);
-    const end = buffer.readBigUInt64LE(8);
-    const amount = buffer.readBigUInt64LE(16);
-    const withdrawn = Number(buffer.readBigUInt64LE(24));
+    const start = Number(buffer.readBigUInt64LE(0));
+    const end = Number(buffer.readBigUInt64LE(8));
+    const amount = Number(buffer.readBigUInt64LE(16)) / LAMPORTS_PER_SOL;
+    const withdrawn = Number(buffer.readBigUInt64LE(24)) / LAMPORTS_PER_SOL;
     const sender = (new PublicKey(buffer.slice(32, 64))).toBase58();
     const recipient = (new PublicKey(buffer.slice(64, 96))).toBase58();
     const status = getStreamStatus(Number(start), Number(end), getUnixTime(new Date())) //in milliseconds
@@ -86,4 +86,9 @@ export function streamCreated(id: string) {
             swal("Link copied to clipboard!", "Send it to the recipient!", "success")
         }
     })
+}
+
+export default function isBase58(address: string)
+{
+    return /[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{44}/.test(address)
 }

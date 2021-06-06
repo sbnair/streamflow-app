@@ -2,7 +2,7 @@ import BufferLayout from "buffer-layout";
 import { INSTRUCTION_WITHDRAW_STREAM} from "../constants/constants";
 import {Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction} from "@solana/web3.js";
 import {StreamData} from "../utils/helpers";
-import {PROGRAM_ID} from "../constants/ids";
+import {PROGRAM_ID, STREAMFLOW_ACCOUNT_ID} from "../constants/ids";
 import sendTransaction from "./sendTransaction";
 import Wallet from "@project-serum/sol-wallet-adapter";
 
@@ -22,6 +22,11 @@ function getWithdrawStreamInstruction(account_id, receiver) {
             isWritable: true
         }, {
             pubkey: new PublicKey(account_id),
+            isSigner: false,
+            isWritable: true
+        }, {
+            //needed to transfer after the only during the final withdrawal transaction
+            pubkey: new PublicKey(STREAMFLOW_ACCOUNT_ID),
             isSigner: false,
             isWritable: true
         }, {

@@ -17,7 +17,7 @@ import DateTime from "./Components/DateTime";
 import Amount from "./Components/Amount";
 import Curtain from "./Components/Curtain";
 import Stream, {getStreamed} from "./Components/Stream";
-import {
+import isBase58, {
     StreamData,
     getExplorerLink,
     getDecodedAccountData,
@@ -40,6 +40,7 @@ import _createStream from "./Actions/createStream";
 import _cancelStream from "./Actions/cancelStream";
 import _withdrawStream from "./Actions/withdrawStream";
 import ButtonPrimary from "./Components/ButtonPrimary";
+import Footer from "./Components/Footer";
 
 function App() {
     const network = "http://localhost:8899"; //clusterApiUrl('localhost');
@@ -82,27 +83,36 @@ function App() {
         }
     }, [connection, selectedWallet]);
 
+    //todo find a way to do this only once
     useEffect(() => {
-        //todo fetch the "withdrawn" amount in background
+        const stream_id = window.location.pathname.substring(1);
+
+        if (isBase58(stream_id)) {
+            streams[stream_id] = undefined;//we're setting the data few lines below
+        } else if (stream_id) {
+            toast.error("Stream URL not valid.")
+        }
+
         for (const id in streams) {
             if (streams.hasOwnProperty(id)) {
+                console.log('id', id);
                 connection.getAccountInfo(new PublicKey(id)).then(result => {
                     if (result?.data) {
-                        const data = getDecodedAccountData(result.data)
-                        streams[id].withdrawn = data.withdrawn / LAMPORTS_PER_SOL;
-                        streams[id].status = data.status;
+                        console.log('yesdata', getDecodedAccountData(result.data));
+                        streams[id] = getDecodedAccountData(result.data)
                     } else {
+                        console.log('nodata', id)
                         // if data doesn't exist - assume it's canceled
                         streams[id].status = STREAM_STATUS_CANCELED;
                         // delete streams[id];
                     }
+                    //todo find a way do this in background
+                    updateStreams()
                 })
             }
         }
-        localStorage.setItem('streams', JSON.stringify(streams))
-    }, [connection, streams])
+    }, [])
 
-    //TODO view specific stream by reading from window.location.href
 
     function requestAirdrop() {
         setLoading(true);
@@ -239,13 +249,12 @@ function App() {
                                 <strong className="block">Balance:</strong>
                                 <span>◎{balance}</span>
                                 <button type="button" onClick={() => selectedWallet.disconnect()}
-                                        className="float-right items-center px-2.5 py-1.5 shadow-sm text-xs font-medium rounded bg-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                                        className="float-right items-center px-2.5 py-1.5 shadow-sm text-xs  font-medium rounded bg-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                                     Disconnect
                                 </button>
-                                <button type="button" onClick={() => requestAirdrop()}
-                                        className="float-right mr-2 items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-                                    Airdrop
-                                </button>
+                                <ButtonPrimary text="Airdrop" action={requestAirdrop}
+                                               className="float-right mr-2 px-2.5 py-1.5 text-xs my-0 rounded active:bg-white"
+                                               disabled={loading}/>
                             </div>
                             <hr/>
                             <form onSubmit={createStream}>
@@ -279,8 +288,7 @@ function App() {
                                             validate(e.target)
                                         }}/>
                                 </div>
-                                <ButtonPrimary text="Stream!" action={() => {
-                                }} submit={true}/>
+                                <ButtonPrimary text="Stream!" submit={true} className="font-bold text-2xl my-5"/>
                             </form>
                         </div>
                         {/*move to different file*/}
@@ -315,18 +323,13 @@ function App() {
                                 title="YouTube video player" frameBorder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen>&nbsp;</iframe>
-                        <ButtonPrimary text="Connect" action={() => setSelectedWallet(urlWallet)}/>
+                        <ButtonPrimary text="Connect" className="font-bold text-2xl my-5"
+                                       action={() => setSelectedWallet(urlWallet)}/>
                     </div>
                 )}
             </div>
             <ToastContainer hideProgressBar position="bottom-left" limit={4}/>
-            <footer className="mt-24 text-center text-sm font-mono text-gray-400">
-                <small><code>#BUIDL @ #SOLANASZN</code></small>
-                <a href="https://solana.com/solanaszn" target="_blank" rel="noopener noreferrer">
-                    <img src="https://solana.com/branding/logomark/logomark-gradient.png"
-                         className="w-12 mx-auto my-2" alt="Solana logo"/>
-                </a>
-            </footer>
+            <Footer/>
         </div>
     );
 }

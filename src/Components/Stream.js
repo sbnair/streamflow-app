@@ -16,6 +16,7 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
     const {start, end, withdrawn, amount, receiver, sender, status} = props.data;
     const {myAddress, removeStream, onStatusUpdate, onCancel, onWithdraw, id} = props;
     const showButton = status === STREAM_STATUS_STREAMING;
+    const color = STREAM_STATUS_COLOR[status];
 
     const [streamed, setStreamed] = useState(getStreamed(start, end, amount))
     const [available, setAvailable] = useState(streamed - withdrawn);
@@ -34,11 +35,11 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
     });
 
     return (
-        <dl className={`transition my-4 grid gap-y-4 gap-x-2 grid-cols-3 p-4 bg-${STREAM_STATUS_COLOR[status]}-50 shadow rounded-lg`}>
+        <dl className={`text-white my-4 grid gap-y-4 gap-x-2 grid-cols-3 p-4 bg-${color}-800 bg-opacity-20 hover:bg-opacity-40 shadow rounded-lg`}>
             <div className="col-span-full">
-                <Badge className="inline" type={status} color={STREAM_STATUS_COLOR[status]}/>
+                <Badge className="inline" type={status} color={color}/>
                 <button onClick={removeStream}
-                        className={`p-1.5 h-6 w-6 float-right align-top rounded-sm hover:bg-${STREAM_STATUS_COLOR[status]}-100 focus:outline-none focus:ring-1`}>
+                        className={`p-1.5 h-6 w-6 float-right align-top rounded-sm hover:bg-${color}-100 focus:outline-none focus:ring-1`}>
                     <XIcon className="float-right w-3 h-3"/>
                 </button>
             </div>
