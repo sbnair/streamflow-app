@@ -251,7 +251,7 @@ function App() {
                             <strong className="text-white">My Streams</strong>
                             {streams ? (
                                 Object.entries(streams)
-                                    .sort(([, stream1], [, stream2]) => stream1.start - stream2.start)
+                                    .sort(([, stream1], [, stream2]) => stream2.start - stream1.start)
                                     .map(([id, data]) => (
                                         <Stream
                                             onWithdraw={() => withdrawStream(id)}
