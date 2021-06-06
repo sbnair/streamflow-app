@@ -7,7 +7,8 @@ import {StreamData} from "../utils/helpers";
 import {XIcon} from "@heroicons/react/outline";
 import {
     STREAM_STATUS_CANCELED,
-    STREAM_STATUS_COLOR, STREAM_STATUS_COMPLETE,
+    STREAM_STATUS_COLOR,
+    STREAM_STATUS_COMPLETE,
     STREAM_STATUS_SCHEDULED,
     STREAM_STATUS_STREAMING
 } from "../constants/constants";
@@ -30,12 +31,12 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
                 onStatusUpdate(tmpStatus)
             }
             //  console.log('streamed %s, withdrawn %s, available %s', streamed, withdrawn, available);
-        }, 1000)
+        }, 100)
         return () => clearInterval(interval);
     });
 
     return (
-        <dl className={`text-white my-4 grid gap-y-4 gap-x-2 grid-cols-3 p-4 bg-${color}-800 bg-opacity-20 hover:bg-opacity-40 shadow rounded-lg`}>
+        <dl className={`text-white my-4 grid gap-y-4 gap-x-2 grid-cols-3 p-4 bg-${color}-300 bg-opacity-10 hover:bg-opacity-20 shadow rounded-lg`}>
             <div className="col-span-full">
                 <Badge className="inline" type={status} color={color}/>
                 <button onClick={removeStream}

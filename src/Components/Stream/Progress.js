@@ -5,12 +5,9 @@ export default function Progress(props: { title: string, value: number, max: num
     return (
         <>
             <dt>{title}</dt>
-            {/*<input type="range" dir={rtl ? "rtl" : "ltr"}*/}
-            {/*       min={0} max={max}*/}
-            {/*       value={value} readOnly={true}/>*/}
-            <div className="rounded-xl h-3 bg-white w-full">
+            <div className="rounded-sm h-3 bg-gray-900 w-full my-auto">
                 <div
-                    className={"bg-gradient-to-r from-primary to-secondary rounded-xl h-full" + (rtl ? "float-right" : "")}
+                    className={"bg-gradient-to-r from-primary to-secondary rounded-sm h-full " + (rtl ? "float-right" : "")}
                     style={{width: value / max * 100 + "%"}}>
                 </div>
             </div>

@@ -7,8 +7,7 @@ export default function SelectToken() {
             <select
                 id="token"
                 name="token"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary  rounded-md"
-                defaultValue="SOL"
+                className="mt-1 text-white bg-gray-800 border-primary block w-full border-black rounded-md focus:ring-secondary focus:border-secondary"                defaultValue="SOL"
             >
                 <option>SOL</option>
                 <option disabled>ETH - Coming soon️™</option>
