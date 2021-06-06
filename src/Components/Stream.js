@@ -5,11 +5,12 @@ import Progress from "./Stream/Progress";
 import {useEffect, useState} from "react";
 import {StreamData} from "../utils/helpers";
 import {XIcon} from "@heroicons/react/outline";
-import {STREAM_STATUS_CANCELED, STREAM_STATUS_COLOR} from "../constants/constants";
+import {STREAM_STATUS_CANCELED, STREAM_STATUS_COLOR, STREAM_STATUS_STREAMING} from "../constants/constants";
 
-export default function Stream(props: { data: StreamData, myAddress: string, removeStream: void, onCancel: void, onWithdraw: void }) {
+export default function Stream(props: { data: StreamData, myAddress: string, id: string, removeStream: void, onCancel: void, onWithdraw: void }) {
     const {start, end, withdrawn, amount, receiver, status, sender} = props.data;
-    const {myAddress, removeStream, onCancel, onWithdraw} = props;
+    const {myAddress, removeStream, onCancel, onWithdraw, id} = props;
+    const showButton = status === STREAM_STATUS_STREAMING;
 
     const [streamed, setStreamed] = useState(getStreamed(start, end, amount))
     const [available, setAvailable] = useState(streamed - withdrawn);
@@ -29,11 +30,15 @@ export default function Stream(props: { data: StreamData, myAddress: string, rem
             <div className="col-span-full">
                 <Badge className="inline" type={status} color={STREAM_STATUS_COLOR[status]}/>
                 <button onClick={removeStream}
-                        className={`p-1.5 h-6 w-6 float-right align-top rounded-sm hover:bg-${STREAM_STATUS_COLOR[status]}-200 focus:outline-none focus:ring-1`}>
+                        className={`p-1.5 h-6 w-6 float-right align-top rounded-sm hover:bg-${STREAM_STATUS_COLOR[status]}-100 focus:outline-none focus:ring-1`}>
                     <XIcon className="float-right w-3 h-3"/>
                 </button>
             </div>
             <Duration start={start} end={end}/>
+            <dt>ID</dt>
+            <dd className="col-span-2 text-sm text-gray-400 truncate">{id}</dd>
+            <dt>Recipient</dt>
+            <dd className="col-span-2 text-sm text-gray-400 truncate">{receiver}</dd>
             {status === STREAM_STATUS_CANCELED ? (
                 <>
                     <Progress title="Withdrawn" value={withdrawn} max={amount}/>
@@ -48,12 +53,12 @@ export default function Stream(props: { data: StreamData, myAddress: string, rem
                         <dt>Available<br/>
                             <sup className="text-xs text-gray-300 align-top">for withdrawal</sup></dt>
                         <dd className="col-span-2">◎{available.toFixed(2)}</dd>
-                        <button onClick={onWithdraw}
-                                className="rounded-md text-sm bg-green-500 hover:bg-green-700 active:bg-green text-white py-1 px-2">
+                        {showButton && (<button onClick={onWithdraw}
+                                                className="rounded-md text-sm bg-green-500 hover:bg-green-700 active:bg-green text-white py-1 px-2">
                             Withdraw
-                        </button>
+                        </button>)}
                     </>)}
-                    {myAddress === sender && (<button onClick={onCancel}
+                    {myAddress === sender && showButton && (<button onClick={onCancel}
                                                       className="rounded-md text-sm bg-red-400 hover:bg-red-600 active:bg-red text-white py-1 px-2">
                         Cancel</button>)}
                 </>)}
@@ -61,12 +66,12 @@ export default function Stream(props: { data: StreamData, myAddress: string, rem
     )
 }
 
-export function getStreamed(start: number, end: number, amount: number) {
-    let now = getUnixTime(new Date());
+export function getStreamed(start: number, end: number, amount: number, timestamp?: number) {
+    timestamp = timestamp || getUnixTime(new Date());
 
-    if (now < start) return 0
-    if (now > end) return amount;
+    if (timestamp < start) return 0
+    if (timestamp > end) return amount;
 
-    //  console.log('now %s, start %s, end %s', now, start, end);
-    return (now - start) / (end - start) * amount;
+    //  console.log('timestamp %s, start %s, end %s', timestamp, start, end);
+    return (timestamp - start) / (end - start) * amount;
 }
