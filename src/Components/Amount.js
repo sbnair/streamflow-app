@@ -1,5 +1,3 @@
-import {LAMPORTS_PER_SOL} from "@solana/web3.js";
-
 export default function Amount(props: { onChange: void, max: number, value: number }) {
     return (
         <div className="col-span-3 sm:col-span-1">

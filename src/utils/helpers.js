@@ -1,42 +1,12 @@
-import BufferLayout from "buffer-layout";
 import {
-    INSTRUCTION_CREATE_STREAM,
+    STREAM_STATUS_CANCELED,
     STREAM_STATUS_COMPLETE,
     STREAM_STATUS_SCHEDULED,
     STREAM_STATUS_STREAMING
 } from "../constants/constants";
-import {clusterApiUrl, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {clusterApiUrl, PublicKey} from "@solana/web3.js";
 import {getUnixTime} from "date-fns";
-
-export function encodeData(formData) {
-    const {amount, start, end} = formData;
-    // Packed as little endian
-    const layout = BufferLayout.struct([
-        BufferLayout.u8("instruction"),
-        BufferLayout.u32("start"),
-        BufferLayout.u32("end"),
-        // N.B. JS Number has 53 significant bits, so numbers larger than
-        // 2^53 can be misrepresented
-        BufferLayout.nu64("amount")
-    ]);
-
-    const data = Buffer.alloc(layout.span);
-    layout.encode({
-            instruction: INSTRUCTION_CREATE_STREAM,
-            start: start,
-            end: end,
-            // amount: Number.MAX_SAFE_INTEGER // limited to 2^53 - 1 = 9007199254740991
-            amount: Math.trunc(amount * LAMPORTS_PER_SOL),
-        },
-        data
-    );
-
-    // UInt64 alternative is to remove the "amount" from layout encoding and
-    // use the following code:
-    // //data.writeBigUInt64LE(BigInt("18446744073709551615"), 9)
-
-    return data;
-}
+import swal from "sweetalert";
 
 export function getDecodedAccountData(buffer: Buffer) {
     const start = buffer.readBigUInt64LE(0);
@@ -66,12 +36,17 @@ export function getStreamStatus(start: number, end: number, now: number) {
     }
 }
 
-export function StreamData(sender: string, receiver: string, amount: number, start: number, end: number, withdrawn: number, status: string) {
+export function StreamData(sender: string, receiver: string, amount: number, start: number, end: number, withdrawn?: number, status?: string, canceled_at: number) {
     this.sender = sender;
     this.receiver = receiver;
     this.amount = amount;
     this.start = start;
     this.end = end;
     this.withdrawn = withdrawn || 0;
-    this.status = status || STREAM_STATUS_SCHEDULED;
+    this.status = canceled_at ? STREAM_STATUS_CANCELED : (status || STREAM_STATUS_SCHEDULED);
+    this.canceled_at = canceled_at;
+}
+
+export function _swal(): Promise {
+    return swal({text: "Are you sure?", icon: "warning", buttons: true})
 }

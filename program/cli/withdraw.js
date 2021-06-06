@@ -32,7 +32,7 @@ async function encodeProgramData() {
     );
 
     // UInt64 alternative is to remove the "amount" from layout encoding and use the following code:
-    // //data.writeBigUInt64LE(BigInt("18446744073709551615"), 9)
+    // //data.writeBigUInt64LE(BigInt("18446744073709551615"), 1)
 
     return data;
 }

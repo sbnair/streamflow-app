@@ -3,9 +3,7 @@ import {
     clusterApiUrl,
     Connection,
     LAMPORTS_PER_SOL,
-    SystemProgram,
-    Transaction,
-    Keypair, TransactionInstruction, PublicKey,
+    Keypair, PublicKey,
 } from "@solana/web3.js";
 import {format, add, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
@@ -18,28 +16,27 @@ import Banner from "./Components/Banner";
 import DateTime from "./Components/DateTime";
 import Amount from "./Components/Amount";
 import Curtain from "./Components/Curtain";
-import Stream from "./Components/Stream";
-import {encodeData, StreamData, getExplorerLink, getDecodedAccountData, getStreamStatus} from "./utils/helpers";
+import Stream, {getStreamed} from "./Components/Stream";
+import {StreamData, getExplorerLink, getDecodedAccountData, _swal} from "./utils/helpers";
 
 import 'react-toastify/dist/ReactToastify.css';
 import logo from './logo.png'
-import {PROGRAM_ID} from "./constants/ids";
-import ToastrLink from "./Components/ToastrLink";
 import {
     DELAY_MINUTES,
     SOLLET_URL,
-    AIRDROP_AMOUNT,
-    ACC_DATA_OFFSET_WITHDRAWN,
-    STREAM_STATUS_SCHEDULED, STREAM_STATUS_STREAMING, STREAM_STATUS_COMPLETE,
+    AIRDROP_AMOUNT, STREAM_STATUS_CANCELED,
 } from "./constants/constants";
 import Logo from "./Components/Logo";
+import _createStream from "./Actions/createStream";
+import _cancelStream from "./Actions/cancelStream";
+import _withdrawStream from "./Actions/withdrawStream";
 
 function App() {
     const network = "http://localhost:8899"; //clusterApiUrl('localhost');
     const now = new Date();
     const pda = Keypair.generate();
 
-    const [providerUrl, setProviderUrl] = useState(SOLLET_URL);
+    const [providerUrl,] = useState(SOLLET_URL);
     const [selectedWallet, setSelectedWallet] = useState(undefined);
     const [connected, setConnected] = useState(false);
     const [balance, setBalance] = useState(undefined);
@@ -83,18 +80,15 @@ function App() {
                     if (result?.data) {
                         const data = getDecodedAccountData(result.data)
                         streams[id].withdrawn = data.withdrawn / LAMPORTS_PER_SOL;
-
                         streams[id].status = data.status;
-                        console.log('decoded data', id, data)
-                        console.log('stream data', id, streams[id])
                     } else {
-                        // should we delete the stream?
+                        // if data doesn't exist - assume it's canceled
+                        streams[id].status = STREAM_STATUS_CANCELED;
                         // delete streams[id];
                     }
                 })
             }
         }
-        console.log('streams updated?', streams);
         localStorage.setItem('streams', JSON.stringify(streams))
     }, [connection, streams])
 
@@ -114,26 +108,26 @@ function App() {
     }
 
     //todo additional form validation
-    function setFormState(e) {
-        const [name, value] = e.target;
-        switch (name) {
-            case "account":
-                if (!PublicKey.isOnCurve((new PublicKey(value)).toBytes())) {
-                    e.target.setCustomValidity('Invalid receiver. We just saved your money, yay!')
-                    e.target.reportValidity();
-                } else {
-                    setReceiver(value);
-                }
-                break;
-            case "end":
-                break;
-            default:
 
-        }
-    }
+    // function setFormState(e) {
+    //     const [name, value] = e.target;
+    //     switch (name) {
+    //         case "account":
+    //             if (!PublicKey.isOnCurve((new PublicKey(value)).toBytes())) {
+    //                 e.target.setCustomValidity('Invalid receiver. We just saved your money, yay!')
+    //                 e.target.reportValidity();
+    //             } else {
+    //                 setReceiver(value);
+    //             }
+    //             break;
+    //         case "end":
+    //             break;
+    //         default:
+    //
+    //     }
+    // }
 
-    async function submit(e) {
-        const end_time_input = document.getElementById('end_time')
+    async function createStream(e) {
         e.preventDefault();
         e.target.reportValidity();
 
@@ -141,6 +135,7 @@ function App() {
         let end = getUnixTime(new Date(endDate + "T" + endTime));
 
         console.log('start %s, end %s', start, end);
+
 
         // end_time_input.setCustomValidity('');
         // end_time_input.reportValidity();
@@ -155,86 +150,45 @@ function App() {
             end = start + 1;
         }
 
-        const instruction = createInstruction({amount: amount, start: start, end: end, receiver: receiver})
-        const tx = new Transaction().add(instruction);
         setLoading(true);
-        await sendTransaction(tx);
-        const streamData = new StreamData(selectedWallet.publicKey.toBase58(), receiver, amount, start, end);
-        addStream(pda.publicKey.toBase58(), streamData);
+        const data = new StreamData(selectedWallet.publicKey.toBase58(), receiver, amount, start, end);
+        await _createStream(data, connection, selectedWallet, network, pda)
+        setLoading(false);
+        addStream(pda.publicKey.toBase58(), data);
     }
 
-    function createInstruction(form): TransactionInstruction {
-        const data = encodeData(form);
-        return new TransactionInstruction({
-            keys: [{
-                pubkey: selectedWallet.publicKey, //sender
-                isSigner: true,
-                isWritable: true
-            }, {
-                pubkey: new PublicKey(form.receiver), //recipient
-                isSigner: false,
-                isWritable: true
-            }, {
-                pubkey: pda.publicKey, //PDA used for data
-                isSigner: true,
-                isWritable: true
-            }, {
-                pubkey: SystemProgram.programId, //system program required to make a transfer
-                isSigner: false,
-                isWritable: false
-            }],
-            programId: new PublicKey(PROGRAM_ID),
-            data: data,
-        });
+    async function withdrawStream(id: string) {
+        const {start, end, amount} = streams[id];
+        await _withdrawStream(id, streams[id], connection, selectedWallet, network)
+        streams[id].withdrawn = getStreamed(start, end, amount);
+        updateStreams()
     }
 
-    async function sendTransaction(transaction) {
-        try {
-            transaction.recentBlockhash = (
-                await connection.getRecentBlockhash()
-            ).blockhash;
-
-            toast.info('Sending signature request to wallet...');
-            transaction.feePayer = selectedWallet.publicKey;
-            transaction.partialSign(pda);
-            const signed = await selectedWallet.signTransaction(transaction);
-            const signature = await connection.sendRawTransaction(signed.serialize());
-            toast.info('Submitted transaction. Awaiting confirmation...');
-            // can use 'finalized' which gives 100% certainty, but requires much longer waiting.
-            const txid = await connection.confirmTransaction(signature, 'confirmed').then(
-                () => {
-                    connection.getBalance(selectedWallet.publicKey).then(
-                        result => setBalance(result / LAMPORTS_PER_SOL)
-                    )
-                })
-            const transactionUrl = `https://explorer.solana.com/tx/${signature}?cluster=custom&customUrl=${network}`;
-            toast.success(<ToastrLink
-                url={transactionUrl}
-                urlText="View on explorer"
-                nonUrlText="Transaction confirmed!"
-            />, {autoClose: 30000, closeOnClick: false});
-            //todo SHARE STREAM URL
-
-            return txid;
-        } catch (e) {
-            console.warn(e);
-            //todo log the error somewhere for our reference
-            toast.error('Error: ' + e.message);
-        } finally {
-            await setLoading(false);
+    async function cancelStream(id: string) {
+        if (await _swal()) {
+            const now = new Date();
+            await _cancelStream(id, streams[id], connection, selectedWallet, network)
+            streams[id].canceled_at = getUnixTime(now);
+            streams[id].status = STREAM_STATUS_CANCELED;
+            updateStreams()
         }
     }
 
     function addStream(id: string, data: StreamData) {
         streams[id] = data;
-        localStorage.streams = JSON.stringify(streams);
-        setStreams((JSON.parse(localStorage.streams)));
+        updateStreams();
     }
 
-    function removeStream(id: string) {
-        delete streams[id];
+    async function removeStream(id: string) {
+        if (await _swal()) {
+            delete streams[id];
+            updateStreams()
+        }
+    }
+
+    function updateStreams() {
         localStorage.streams = JSON.stringify(streams);
-        setStreams(JSON.parse(localStorage.streams));
+        setStreams((JSON.parse(localStorage.streams)));
     }
 
     return (
@@ -267,7 +221,7 @@ function App() {
                                 </button>
                             </div>
                             <hr/>
-                            <form onSubmit={submit}>
+                            <form onSubmit={createStream}>
                                 <div className="my-4 grid gap-4 grid-cols-5 sm:grid-cols-2">
                                     <Amount onChange={setAmount} value={amount} max={balance}/>
                                     <SelectToken/>
@@ -288,7 +242,7 @@ function App() {
                                 </div>
                                 <button type="submit"
                                         className="mt-8 block font-bold mx-auto place-self-center items-center px-8 py-4 border border-transparent text-2xl rounded-md shadow-sm text-white bg-primary hover:bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-                                    Stream Money
+                                    Stream!
                                 </button>
                             </form>
                         </div>
@@ -297,15 +251,17 @@ function App() {
                             <strong>My Streams</strong>
                             {streams ? (
                                 Object.entries(streams)
-                                    .sort(([, stream1],[,stream2])=> stream1.start - stream2.start)
+                                    .sort(([, stream1], [, stream2]) => stream1.start - stream2.start)
                                     .map(([id, data]) => (
-                                    <Stream
-                                        key={id}
-                                        id={id}
-                                        data={data}
-                                        myAddress={selectedWallet.publicKey.toBase58()}
-                                        removeStream={() => removeStream(id)}/>
-                                ))
+                                        <Stream
+                                            onWithdraw={() => withdrawStream(id)}
+                                            onCancel={() => cancelStream(id)}
+                                            key={id}
+                                            id={id}
+                                            data={data}
+                                            myAddress={selectedWallet.publicKey.toBase58()}
+                                            removeStream={() => removeStream(id)}/>
+                                    ))
                             ) : (
                                 <span>Your streams will appear here!</span>
                             )}
