@@ -34,7 +34,7 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
                 onStatusUpdate(tmpStatus)
             }
             //  console.log('streamed %s, withdrawn %s, available %s', streamed, withdrawn, available);
-        }, 100)
+        }, 1000)
         return () => clearInterval(interval);
     });
 

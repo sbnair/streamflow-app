@@ -184,9 +184,9 @@ function App() {
         setLoading(false);
         if (success) {
             streamCreated(pda.publicKey.toBase58())
+            // const newBalance = await connection.getBalance(selectedWallet.publicKey);
+            setBalance(balance - amount)
             setStreams({...streams, [pda.publicKey.toBase58()]: data})
-            const newBalance = await connection.getBalance(selectedWallet.publicKey);
-            setBalance(newBalance / LAMPORTS_PER_SOL)
         }
     }
 
@@ -194,7 +194,9 @@ function App() {
         const {start, end, amount} = streams[id];
         const success = await _withdrawStream(id, streams[id], connection, selectedWallet, network)
         if (success) {
-            setStreams({...streams, [id]: {...streams[id], withdrawn: getStreamed(start, end, amount)}})
+            const withdrawn = getStreamed(start, end, amount)
+            setBalance(balance - withdrawn)
+            setStreams({...streams, [id]: {...streams[id], withdrawn}})
         }
     }
 
@@ -204,6 +206,7 @@ function App() {
         const withdrawn = getStreamed(start, end, amount);
         const success = await _cancelStream(id, streams[id], connection, selectedWallet, network)
         if (success) {
+            setBalance(balance + amount - withdrawn)
             setStreams({
                 ...streams,
                 [id]: {...streams[id], withdrawn, canceled_at: getUnixTime(now), status: STREAM_STATUS_CANCELED}
