@@ -99,6 +99,8 @@ function App() {
                 }
             }
         }
+        // this is on purpose, as we want it executed only once (during initialization)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -128,7 +130,7 @@ function App() {
 
     function validate(element) {
         const {name, value} = element;
-        let start, end;
+        let start;
 
         let msg = "";
 
@@ -157,10 +159,6 @@ function App() {
         }
         // console.log('end %s start %s now %s msg %s', end, start, (new Date()), msg)
         element.setCustomValidity(msg);
-    }
-
-    function validateForm() {
-        document.getElementById('form').reportValidity();
     }
 
     async function createStream(e) {
