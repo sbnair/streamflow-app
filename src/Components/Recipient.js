@@ -11,7 +11,7 @@ export default function Recipient(props: { onChange: void, value: string }) {
                     id="account"
                     defaultValue={props.value}
                     onChange={e => props.onChange(e.target.value)}
-                    pattern="[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{44}"
+                    pattern="[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{43,44}"
                     className="text-white bg-gray-800 border-primary block w-full border-black rounded-md focus:ring-secondary focus:border-secondary"
                     placeholder="Please double check the address"
                     aria-describedby="account-description"

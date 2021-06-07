@@ -64,7 +64,7 @@ export function copyToClipboard(value): void {
 }
 
 export function streamCreated(id: string) {
-    const url = window.location.origin + "/" + id;
+    const url = window.location.origin + "#" + id;
     swal({
         button: "Copy Stream URL",
         icon: 'success',

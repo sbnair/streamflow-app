@@ -1,12 +1,22 @@
 import {useEffect, useMemo, useState} from "react";
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {add, format, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {toast, ToastContainer} from "react-toastify";
 import {ExternalLinkIcon} from "@heroicons/react/outline";
-import Base58 from './lib/Base58'
 
-import {Amount, Banner, Curtain, DateTime, getStreamed, Recipient, SelectToken, Stream, Logo, Footer} from "./Components";
+import {
+    Amount,
+    Banner,
+    Curtain,
+    DateTime,
+    getStreamed,
+    Recipient,
+    SelectToken,
+    Stream,
+    Logo,
+    Footer
+} from "./Components";
 import {_swal, getDecodedAccountData, getExplorerLink, streamCreated, StreamData} from "./utils/helpers";
 
 import {AIRDROP_AMOUNT, DELAY_MINUTES, SOLLET_URL, STREAM_STATUS_CANCELED,} from "./constants/constants";
@@ -18,7 +28,7 @@ import logo from './logo.png'
 import NotConnected from "./Pages/NotConnected";
 
 function App() {
-    const network = "http://localhost:8899"; //clusterApiUrl('localhost');//todo update prior to deploy
+    const network = "http://localhost:8899"; //clusterApiUrl('localhost');//todo update prior to devnet deploy
     const now = new Date();
     const pda = Keypair.generate();
 
@@ -26,8 +36,8 @@ function App() {
     const [selectedWallet, setSelectedWallet] = useState(undefined);
     const [connected, setConnected] = useState(false);
     const [balance, setBalance] = useState(undefined);
-    const [amount, setAmount] = useState(1.337); //todo remove
-    const [receiver, setReceiver] = useState("A4NseNL9CtSNFFhg84Gro18WorbfimeWHjcUXM2eLiTZ"); //todo remove
+    const [amount, setAmount] = useState(undefined);
+    const [receiver, setReceiver] = useState(undefined);
     const [startDate, setStartDate] = useState(format(now, "yyyy-MM-dd"));
     const [startTime, setStartTime] = useState(format(add(now, {minutes: DELAY_MINUTES}), "HH:mm"));
     const [endDate, setEndDate] = useState(startDate);
@@ -60,41 +70,40 @@ function App() {
 
     useEffect(() => {
         const newStreams = {...streams}
-        const stream_id = window.location.pathname.substring(1);
-        if (stream_id) {
-            if (PublicKey.isOnCurve(Base58.decode(stream_id))) {
-                newStreams[stream_id] = undefined;//we're setting the data few lines below
-            } else {
-                toast.error("Invalid Stream URL. Check with the sender.")
+        const streamID = window.location.hash.substring(1);
+
+        if (streamID) {
+            try {
+                new PublicKey(streamID);
+                newStreams[streamID] = undefined; // We're setting the data few lines below
+            } catch (e) {
+                toast.error("Stream URL not valid. Please double check with the sender.")
             }
         }
 
-
         for (const id in newStreams) {
             if (newStreams.hasOwnProperty(id)) {
+                //first, the cleanup
                 let pk = undefined
                 try {
                     pk = new PublicKey(id);
                 } catch (e) {
-                    toast.error(e.message)
+                    toast.error(e.message + id)
+                    removeStream(id, true);
                 }
+
                 if (pk) {
                     connection.getAccountInfo(new PublicKey(id)).then(result => {
                         const temp = {...streams}
                         if (result?.data) {
-                            console.log('id', id)
                             temp[id] = getDecodedAccountData(result.data);
-                            console.log(temp[id])
                         } else {
-                            if (id === stream_id) {
-                                toast.error("Invalid Stream URL. Check with the sender.")
+                            if (id === streamID) {
+                                toast.error("Stream URL not valid. Please double check with the sender.")
                             }
                             delete temp[id]
-                            // if data doesn't exist - assume it's canceled
-                            // setStreams({...streams, [id]: {...streams[id], status: STREAM_STATUS_CANCELED}})
                         }
                         setStreams(temp)
-                        console.log({streams})
                     })
                 }
             }
@@ -109,7 +118,6 @@ function App() {
 
     function requestAirdrop() {
         setLoading(true);
-        //throttle airdrop requests
         (async () => {
             const signature = await connection.requestAirdrop(selectedWallet.publicKey, AIRDROP_AMOUNT * LAMPORTS_PER_SOL);
             const result = await connection.confirmTransaction(signature, 'confirmed');
@@ -123,21 +131,11 @@ function App() {
         })();
     }
 
-    //todo additional form validation
-    //before submit form.reportValidity() jer nesto nije touched.
-    //kaze kuća moja nino za svaki element onsubmit
-    //update balance ovde
-
     function validate(element) {
         const {name, value} = element;
         let start;
-
         let msg = "";
-
         switch (name) {
-            case "account":
-                msg = PublicKey.isOnCurve((new PublicKey(value)).toBytes()) ? "Invalid address. We just saved your money, yay!" : "";
-                break;
             case "start":
                 start = new Date(value + "T" + startTime);
                 msg = start < new Date() ? "Cannot start the stream in the past." : "";
@@ -161,17 +159,19 @@ function App() {
         element.setCustomValidity(msg);
     }
 
-    async function createStream(e) {
-        e.preventDefault();
+    async function createStream() {
+        const form = document.getElementById('form');
+        for (const elem of form.elements) {
+            validate(elem);
+        }
 
-        if (!e.target.checkValidity()) {
-            e.target.reportValidity();
+        if (!form.checkValidity()) {
+            form.reportValidity();
             return false;
         }
 
         const start = getUnixTime(new Date(startDate + "T" + startTime));
         let end = getUnixTime(new Date(endDate + "T" + endTime));
-        //console.log('start %s, end %s', start, end);
 
         // Make sure that end time is always AFTER start time
         if (end === start) {
@@ -186,7 +186,6 @@ function App() {
             streamCreated(pda.publicKey.toBase58())
             setStreams({...streams, [pda.publicKey.toBase58()]: data})
             const newBalance = await connection.getBalance(selectedWallet.publicKey);
-            console.log('nb', newBalance)
             setBalance(newBalance / LAMPORTS_PER_SOL)
         }
     }
@@ -195,8 +194,7 @@ function App() {
         const {start, end, amount} = streams[id];
         const success = await _withdrawStream(id, streams[id], connection, selectedWallet, network)
         if (success) {
-            streams[id].withdrawn = getStreamed(start, end, amount);
-            updateStreams()
+            setStreams({...streams, [id]: {...streams[id], withdrawn: getStreamed(start, end, amount)}})
         }
     }
 
@@ -206,24 +204,19 @@ function App() {
         const withdrawn = getStreamed(start, end, amount);
         const success = await _cancelStream(id, streams[id], connection, selectedWallet, network)
         if (success) {
-            streams[id].withdrawn = withdrawn;
-            streams[id].canceled_at = getUnixTime(now);
-            streams[id].status = STREAM_STATUS_CANCELED;
-            updateStreams()
+            setStreams({
+                ...streams,
+                [id]: {...streams[id], withdrawn, canceled_at: getUnixTime(now), status: STREAM_STATUS_CANCELED}
+            })
         }
     }
 
-    async function removeStream(id: string) {
-        if (await _swal()) {
+    async function removeStream(id: string, skipPrompt?: boolean) {
+        if (!skipPrompt && await _swal()) {
             const newStreams = {...streams}
             delete newStreams[id];
             setStreams(newStreams)
         }
-    }
-
-    function updateStreams() {
-        localStorage.streams = JSON.stringify(streams);
-        setStreams((JSON.parse(localStorage.streams)));
     }
 
     return (
@@ -263,10 +256,7 @@ function App() {
                                     <DateTime
                                         title="start"
                                         date={startDate}
-                                        updateDate={e => {
-                                            setStartDate(e.target.value);
-                                            validate(e.target)
-                                        }}//todo update, pass to child
+                                        updateDate={e => setStartDate(e.target.value)}
                                         time={startTime}
                                         updateTime={e => {
                                             setStartTime(e.target.value);
@@ -276,17 +266,15 @@ function App() {
                                     <DateTime
                                         title="end"
                                         date={endDate}
-                                        updateDate={e => {
-                                            setEndDate(e.target.value);
-                                            validate(e.target)
-                                        }}
+                                        updateDate={e => setEndDate(e.target.value)}
                                         time={endTime}
                                         updateTime={e => {
                                             setEndTime(e.target.value);
                                             validate(e.target)
                                         }}/>
                                 </div>
-                                <ButtonPrimary text="Stream!" submit={true} className="font-bold text-2xl my-5"/>
+                                <ButtonPrimary text="Stream!" className="font-bold text-2xl my-5"
+                                               action={() => createStream()}/>
                             </form>
                         </div>
                         {/*move to different file StreamsContainer */}
