@@ -4,9 +4,10 @@ import {add, format, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {toast, ToastContainer} from "react-toastify";
 import {ExternalLinkIcon} from "@heroicons/react/outline";
+import Base58 from 'base-58'
 
 import {Amount, Banner, Curtain, DateTime, getStreamed, Recipient, SelectToken, Stream} from "./Components";
-import isBase58, {_swal, getDecodedAccountData, getExplorerLink, streamCreated, StreamData} from "./utils/helpers";
+import {_swal, getDecodedAccountData, getExplorerLink, streamCreated, StreamData} from "./utils/helpers";
 
 import {AIRDROP_AMOUNT, DELAY_MINUTES, SOLLET_URL, STREAM_STATUS_CANCELED,} from "./constants/constants";
 import Logo from "./Components/Logo";
@@ -66,22 +67,42 @@ function App() {
         const newStreams = {...streams}
         const stream_id = window.location.pathname.substring(1);
 
-        if (isBase58(stream_id)) {
-            newStreams[stream_id] = undefined;//we're setting the data few lines below
-        } else if (stream_id) {
-            toast.error("Stream URL not valid.")
+
+        if (stream_id) {
+            if (PublicKey.isOnCurve(Base58.decode(stream_id))) {
+                newStreams[stream_id] = undefined;//we're setting the data few lines below
+            } else {
+                toast.error("Invalid Stream URL. Check with the sender.")
+            }
         }
+
 
         for (const id in newStreams) {
             if (newStreams.hasOwnProperty(id)) {
-                connection.getAccountInfo(new PublicKey(id)).then(result => {
-                    if (result?.data) {
-                        setStreams({...streams, [id]: getDecodedAccountData(result.data)})
-                    } else {
-                        // if data doesn't exist - assume it's canceled
-                        setStreams({...streams, [id]: {...streams[id], status: STREAM_STATUS_CANCELED}})
-                    }
-                })
+                let pk = undefined
+                try {
+                    pk = new PublicKey(id);
+                } catch (e) {
+                    toast.error(e.message)
+                }
+                if (pk) {
+                    connection.getAccountInfo(new PublicKey(id)).then(result => {
+                        const temp = {...streams}
+                        if (result?.data) {
+                            console.log('id', id)
+                            temp[id] = getDecodedAccountData(result.data);
+                            console.log(temp[id])
+                        } else {
+                            if (id === stream_id) {
+                                toast.error("Invalid Stream URL. Check with the sender.")
+                            }
+                            delete temp[id]
+                            // if data doesn't exist - assume it's canceled
+                            // setStreams({...streams, [id]: {...streams[id], status: STREAM_STATUS_CANCELED}})
+                        }
+                        setStreams(temp)
+                    })
+                }
             }
         }
     }, [])
@@ -180,17 +201,19 @@ function App() {
 
     async function withdrawStream(id: string) {
         const {start, end, amount} = streams[id];
-        await _withdrawStream(id, streams[id], connection, selectedWallet, network)
-        streams[id].withdrawn = getStreamed(start, end, amount);
-        updateStreams()
+        const success = await _withdrawStream(id, streams[id], connection, selectedWallet, network)
+        if (success) {
+            streams[id].withdrawn = getStreamed(start, end, amount);
+            updateStreams()
+        }
     }
 
     async function cancelStream(id: string) {
-        if (await _swal()) {
-            const {start, end, amount} = streams[id];
-            const now = new Date();
-            const withdrawn = getStreamed(start, end, amount);
-            await _cancelStream(id, streams[id], connection, selectedWallet, network)
+        const {start, end, amount} = streams[id];
+        const now = new Date();
+        const withdrawn = getStreamed(start, end, amount);
+        const success = await _cancelStream(id, streams[id], connection, selectedWallet, network)
+        if (success) {
             streams[id].withdrawn = withdrawn;
             streams[id].canceled_at = getUnixTime(now);
             streams[id].status = STREAM_STATUS_CANCELED;

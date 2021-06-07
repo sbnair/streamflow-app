@@ -87,8 +87,3 @@ export function streamCreated(id: string) {
         }
     })
 }
-
-export default function isBase58(address: string)
-{
-    return /[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{44}/.test(address)
-}

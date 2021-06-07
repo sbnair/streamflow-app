@@ -25,7 +25,7 @@ function getWithdrawStreamInstruction(account_id, receiver) {
             isSigner: false,
             isWritable: true
         }, {
-            //needed to transfer after the only during the final withdrawal transaction
+            //needed to transfer the rent only during the final withdrawal transaction
             pubkey: new PublicKey(STREAMFLOW_ACCOUNT_ID),
             isSigner: false,
             isWritable: true
@@ -43,20 +43,17 @@ function getWithdrawStreamInstruction(account_id, receiver) {
 function encodeInstructionData() {
     const layout = BufferLayout.struct([
         BufferLayout.u8("instruction"),
-        // N.B. JS Number has 53 significant bits, so numbers larger than
-        // 2^53 can be misrepresented
         BufferLayout.nu64("amount")
     ]);
 
     const data = Buffer.alloc(layout.span);
+    //TODO - allow withdrawal of arbitrary (allowed) amount
     layout.encode({
             instruction: INSTRUCTION_WITHDRAW_STREAM,
-            // amount: Number.MAX_SAFE_INTEGER // limited to 2^53 = 9007199254740992
-            //TODO - allow withdrawal of arbitrary (allowed) amount
             amount: 0,// 0 = whole available amount is withdrawn.
         },
         data
     );
-
+console.log('buffer', Buffer.toString(data));
     return data;
 }

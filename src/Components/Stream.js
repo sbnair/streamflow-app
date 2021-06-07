@@ -16,11 +16,14 @@ import {
 export default function Stream(props: { data: StreamData, myAddress: string, id: string, removeStream: void, onStatusUpdate: void, onCancel: void, onWithdraw: void }) {
     const {start, end, withdrawn, amount, receiver, sender, status} = props.data;
     const {myAddress, removeStream, onStatusUpdate, onCancel, onWithdraw, id} = props;
-    const showButton = status === STREAM_STATUS_STREAMING;
+
     const color = STREAM_STATUS_COLOR[status];
 
     const [streamed, setStreamed] = useState(getStreamed(start, end, amount))
     const [available, setAvailable] = useState(streamed - withdrawn);
+
+    const showWithdraw = status === STREAM_STATUS_STREAMING || (status === STREAM_STATUS_COMPLETE && withdrawn < amount);
+    const showCancel = (status === STREAM_STATUS_STREAMING || status === STREAM_STATUS_SCHEDULED) && myAddress === sender
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -63,12 +66,12 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
                         <dt>Available<br/>
                             <sup className="text-xs text-gray-300 align-top">for withdrawal</sup></dt>
                         <dd className="col-span-2">◎{available.toFixed(2)}</dd>
-                        {showButton && (<button onClick={onWithdraw}
+                        {showWithdraw && (<button onClick={onWithdraw}
                                                 className="rounded-md text-sm bg-green-500 hover:bg-green-700 active:bg-green text-white py-1 px-2">
                             Withdraw
                         </button>)}
                     </>)}
-                    {myAddress === sender && showButton && (<button onClick={onCancel}
+                    { showCancel && (<button onClick={onCancel}
                                                                     className="rounded-md text-sm bg-red-400 hover:bg-red-600 active:bg-red text-white py-1 px-2">
                         Cancel</button>)}
                 </>)}
