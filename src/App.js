@@ -1,29 +1,24 @@
 import {useEffect, useMemo, useState} from "react";
-import {Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {add, format, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {toast, ToastContainer} from "react-toastify";
 import {ExternalLinkIcon} from "@heroicons/react/outline";
-import Base58 from 'base-58'
+import Base58 from './lib/Base58'
 
-import {Amount, Banner, Curtain, DateTime, getStreamed, Recipient, SelectToken, Stream} from "./Components";
+import {Amount, Banner, Curtain, DateTime, getStreamed, Recipient, SelectToken, Stream, Logo, Footer} from "./Components";
 import {_swal, getDecodedAccountData, getExplorerLink, streamCreated, StreamData} from "./utils/helpers";
 
 import {AIRDROP_AMOUNT, DELAY_MINUTES, SOLLET_URL, STREAM_STATUS_CANCELED,} from "./constants/constants";
-import Logo from "./Components/Logo";
-//isto kao gore index.js
-import _createStream from "./Actions/createStream";
-import _cancelStream from "./Actions/cancelStream";
-import _withdrawStream from "./Actions/withdrawStream";
+import {_createStream, _cancelStream, _withdrawStream} from './Actions'
 import ButtonPrimary from "./Components/ButtonPrimary";
-import Footer from "./Components/Footer";
 
 import 'react-toastify/dist/ReactToastify.css';
 import logo from './logo.png'
 import NotConnected from "./Pages/NotConnected";
 
 function App() {
-    const network = "http://localhost:8899"; //clusterApiUrl('localhost');
+    const network = "http://localhost:8899"; //clusterApiUrl('localhost');//todo update prior to deploy
     const now = new Date();
     const pda = Keypair.generate();
 
@@ -66,8 +61,6 @@ function App() {
     useEffect(() => {
         const newStreams = {...streams}
         const stream_id = window.location.pathname.substring(1);
-
-
         if (stream_id) {
             if (PublicKey.isOnCurve(Base58.decode(stream_id))) {
                 newStreams[stream_id] = undefined;//we're setting the data few lines below
@@ -101,6 +94,7 @@ function App() {
                             // setStreams({...streams, [id]: {...streams[id], status: STREAM_STATUS_CANCELED}})
                         }
                         setStreams(temp)
+                        console.log({streams})
                     })
                 }
             }
