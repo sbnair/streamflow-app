@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from "react";
-import {clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {add, format, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {toast, ToastContainer} from "react-toastify";
