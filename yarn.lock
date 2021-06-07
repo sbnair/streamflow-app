@@ -2852,6 +2852,11 @@
   "resolved" "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.0.tgz"
   "version" "1.0.0"
 
+"base-58@^0.0.1":
+  "integrity" "sha1-hdPnAlEHVmGTM4j4MdHri49jFOM="
+  "resolved" "https://registry.npmjs.org/base-58/-/base-58-0.0.1.tgz"
+  "version" "0.0.1"
+
 "base-x@^3.0.2":
   "integrity" "sha512-Rl/1AWP4J/zRrk54hhlxH4drNxPJXYUaKffODVI53/dAsV4t9fBxyxYKAVPU1XBHxYwOWP9h9H0hM2MVw4YfJA=="
   "resolved" "https://registry.npmjs.org/base-x/-/base-x-3.0.8.tgz"
