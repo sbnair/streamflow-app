@@ -4,7 +4,7 @@ import {add, format, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {toast, ToastContainer} from "react-toastify";
 import {ExternalLinkIcon} from "@heroicons/react/outline";
-
+import NotConnected from "./Pages/NotConnected";
 import {
     Amount,
     Banner,
@@ -15,17 +15,23 @@ import {
     SelectToken,
     Stream,
     Logo,
-    Footer
+    Footer,
+    ButtonPrimary
 } from "./Components";
-import {_swal, getDecodedAccountData, getExplorerLink, streamCreated, StreamData} from "./utils/helpers";
+import {
+    _swal,
+    getDecodedAccountData,
+    getExplorerLink,
+    getFormattedBalance,
+    streamCreated,
+    StreamData
+} from "./utils/helpers";
 
-import {AIRDROP_AMOUNT, DELAY_MINUTES, SOLLET_URL, STREAM_STATUS_CANCELED,} from "./constants/constants";
+import {AIRDROP_AMOUNT, SOLLET_URL, STREAM_STATUS_CANCELED,} from "./constants/constants";
 import {_createStream, _cancelStream, _withdrawStream} from './Actions'
-import ButtonPrimary from "./Components/ButtonPrimary";
 
 import 'react-toastify/dist/ReactToastify.css';
 import logo from './logo.png'
-import NotConnected from "./Pages/NotConnected";
 
 function App() {
     const network = clusterApiUrl('devnet');

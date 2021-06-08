@@ -7,3 +7,4 @@ export {default as Curtain} from "./Curtain";
 export {default as Stream, getStreamed} from './Stream'
 export {default as Footer} from './Footer'
 export {default as Logo} from './Logo'
+export {default as ButtonPrimary} from './ButtonPrimary'

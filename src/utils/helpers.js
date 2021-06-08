@@ -55,7 +55,7 @@ export function getDecodedAccountData(buffer: Buffer) {
 
 export function getExplorerLink(type: string, id: string, network?: string): string {
     network = network || clusterApiUrl('mainnet-beta');
-    const cluster = getClusterName(network) ||  `custom&customUrl=${network}`
+    const cluster = getClusterName(network) || `custom&customUrl=${network}`
     return `https://explorer.solana.com/${type}/${id}?cluster=${cluster}`;
 
 }
@@ -129,4 +129,4 @@ export function streamCreated(id: string) {
 function getClusterName(url: string) {
     const hasMatch = url.match(/https:\/\/api.(.*).solana.com/)
     return hasMatch ? hasMatch[1] : null
-}
+}}
