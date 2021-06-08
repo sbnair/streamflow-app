@@ -2,7 +2,7 @@ import {toast} from "react-toastify";
 import {Connection, Keypair, Transaction} from "@solana/web3.js";
 import ToastrLink from "../Components/ToastrLink";
 import Wallet from "@project-serum/sol-wallet-adapter";
-import {INSTRUCTION_CREATE_STREAM, TX_FINALITY_CONFIRMED, TX_FINALITY_FINALIZED} from "../constants/constants";
+import {INSTRUCTION_CREATE_STREAM, TX_FINALITY_CONFIRMED} from "../constants/constants";
 import {getExplorerLink} from "../utils/helpers";
 
 export default async function sendTransaction(type: number, transaction: Transaction, connection: Connection, wallet: Wallet, network?: string, pda?: Keypair) {
