@@ -13,12 +13,9 @@ export default class Banner extends Component {
                 <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
                     <div className="pr-16 sm:text-center sm:px-16">
                         <p className="font-small text-white">
-                            <span>This is the <b>Devnet</b> version. Go wild and test freely! </span>
-                            <span className="inline-block ml-2">
-              <a href="https://streamflow.finance" rel="noopener noreferrer" target="_blank" className="text-white underline">
-                  Live version coming soon<span aria-hidden="true">&rarr;</span>
-              </a>
-            </span>
+                            <span><b>Devnet version. Test freely!</b> Transactions are slower. </span>
+                            Live version coming soon™
+                            {/*<span aria-hidden="true">&rarr;</span>*/}
                         </p>
                     </div>
                     <div
