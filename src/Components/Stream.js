@@ -33,7 +33,6 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
             if (tmpStatus !== status) {
                 onStatusUpdate(tmpStatus)
             }
-            //  console.log('streamed %s, withdrawn %s, available %s', streamed, withdrawn, available);
         }, 1000)
         return () => clearInterval(interval);
     });
@@ -85,7 +84,6 @@ export function getStreamed(start: number, end: number, amount: number, timestam
     if (timestamp < start) return 0
     if (timestamp > end) return amount;
 
-    //  console.log('timestamp %s, start %s, end %s', timestamp, start, end);
     return (timestamp - start) / (end - start) * amount;
 }
 

@@ -1,2 +1,2 @@
-export const PROGRAM_ID = "B5bTusk3e66yj394hpHtVTgK2JrzgPcuheqdchgtdZ95";
-export const STREAMFLOW_ACCOUNT_ID = "Ht5G1RhkcKnpLVLMhqJc5aqZ4wYUEbxbtZwGCVbgU7DL";
+export const PROGRAM_ID = "2DvvSEde36Ch3B52g9hKWDYbfmJimLpJwVBV9Cknypi4";
+export const STREAMFLOW_ACCOUNT_ID = "DrFtxPb9F6SxpHHHFiEtSNXE3SZCUNLXMaHS6r8pkoz2";

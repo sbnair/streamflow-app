@@ -54,6 +54,5 @@ function encodeInstructionData() {
         },
         data
     );
-console.log('buffer', Buffer.toString(data));
     return data;
 }

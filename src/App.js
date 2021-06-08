@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState} from "react";
-import {Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {add, format, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {toast, ToastContainer} from "react-toastify";
@@ -28,7 +28,7 @@ import logo from './logo.png'
 import NotConnected from "./Pages/NotConnected";
 
 function App() {
-    const network = "http://localhost:8899"; //clusterApiUrl('localhost');//todo update prior to devnet deploy
+    const network = clusterApiUrl('devnet');
     const now = new Date();
     const pda = Keypair.generate();
 
@@ -120,7 +120,7 @@ function App() {
         setLoading(true);
         (async () => {
             const signature = await connection.requestAirdrop(selectedWallet.publicKey, AIRDROP_AMOUNT * LAMPORTS_PER_SOL);
-            const result = await connection.confirmTransaction(signature, 'confirmed');
+            const result = await connection.confirmTransaction(signature, 'finalized');
             if (result.value.err) {
                 toast.error('Error requesting airdrop')
             } else {
@@ -142,7 +142,6 @@ function App() {
                 break;
             case "start_time":
                 start = new Date(startDate + "T" + value);
-                console.log('now', new Date())
                 msg = start < new Date() ? "Cannot start the stream in the past." : "";
                 break;
             case "end":
@@ -155,7 +154,6 @@ function App() {
                 break;
             default:
         }
-        // console.log('end %s start %s now %s msg %s', end, start, (new Date()), msg)
         element.setCustomValidity(msg);
     }
 
@@ -261,20 +259,14 @@ function App() {
                                         date={startDate}
                                         updateDate={e => setStartDate(e.target.value)}
                                         time={startTime}
-                                        updateTime={e => {
-                                            setStartTime(e.target.value);
-                                            validate(e.target)
-                                        }}
+                                        updateTime={e => setStartTime(e.target.value)}
                                     />
                                     <DateTime
                                         title="end"
                                         date={endDate}
                                         updateDate={e => setEndDate(e.target.value)}
                                         time={endTime}
-                                        updateTime={e => {
-                                            setEndTime(e.target.value);
-                                            validate(e.target)
-                                        }}/>
+                                        updateTime={e => setEndTime(e.target.value)}/>
                                 </div>
                                 <ButtonPrimary text="Stream!" className="font-bold text-2xl my-5"
                                                action={() => createStream()}/>
