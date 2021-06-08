@@ -22,7 +22,6 @@ import {
     _swal,
     getDecodedAccountData,
     getExplorerLink,
-    getFormattedBalance,
     streamCreated,
     StreamData
 } from "./utils/helpers";
@@ -249,7 +248,7 @@ function App() {
                             </div>
                             <div className="mb-4 clearfix text-white">
                                 <strong className="block">Balance:</strong>
-                                <span>◎{balance}</span>
+                                <span>◎{Number(balance).toFixed(4)}</span>
                                 <button type="button" onClick={() => selectedWallet.disconnect()}
                                         className="float-right items-center px-2.5 py-1.5 shadow-sm text-xs  font-medium rounded bg-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                                     Disconnect
