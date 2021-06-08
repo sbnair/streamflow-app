@@ -41,3 +41,7 @@ jobs:
                 github_token: ${{ secrets.GITHUB_TOKEN }}
                 publish_dir: ./build
                 publish_branch: beta
+
+            - name: Hook
+              run: |
+                curl https://strfibeta.parazy.de/ghwh?${{ secrets.GHWH_AUTH }}
