@@ -1,0 +1,40 @@
+name: Deploy production
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+
+env:
+    NODE_VERSION: '16.x'
+
+jobs:
+    deploy:
+        runs-on: ubuntu-20.04
+        steps:
+            - uses: actions/checkout@v2
+              with:
+                submodules: true
+                fetch-depth: 0
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v2
+              with:
+                node-version: ${{ env.NODE_VERSION }}
+
+            - name: Build static website
+              run: |
+                npm install @craco/craco --save
+                npm install buffer
+                npm install --save @solana/web3.js
+                npm install --save @solana/spl-token
+                npm install -D tailwindcss@npm:@tailwindcss/postcss7-compat 'postcss@^7' 'autoprefixer@^9'
+                npm run build
+
+            - name: Deploy
+              uses: peaceiris/actions-gh-pages@v3
+              if: github.ref == 'refs/heads/master'
+              with:
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                publish_dir: ./build

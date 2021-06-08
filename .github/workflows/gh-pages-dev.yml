@@ -1,4 +1,4 @@
-name: github pages
+name: Deploy beta
 
 on:
     push:
@@ -25,11 +25,13 @@ jobs:
 
             - name: Build static website
               run: |
-                npm install @craco/craco --save
-                npm install buffer
-                npm install --save @solana/web3.js
-                npm install --save @solana/spl-token
-                npm install -D tailwindcss@npm:@tailwindcss/postcss7-compat 'postcss@^7' 'autoprefixer@^9'
+                npm install --save \
+                    @solana/web3.js \
+                    @solana/spl-token \
+                    @craco/craco \
+                    tailwindcss@npm:@tailwindcss/postcss7-compat \
+                    'postcss@^7' \
+                    'autoprefixer@^9'
                 npm run build
 
             - name: Deploy
@@ -38,3 +40,4 @@ jobs:
               with:
                 github_token: ${{ secrets.GITHUB_TOKEN }}
                 publish_dir: ./build
+                publish_branch: beta
