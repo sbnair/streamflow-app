@@ -1,6 +1,7 @@
 # StreamFlow Finance App
 Web application client for the StreamFlow streaming payments protocol.
-Fully decentralized. Free and open-source. BUIDL-ed on Solana.
+
+Serverless. Realtime. **Free and open-source.** BUIDL-ed for Solana.
 
 - [Demo](https://www.youtube.com/watch?v=7hrv7HDK3oE)
 - [Website](https://streamflow.finance)
