@@ -29,7 +29,7 @@ import {
 import {
     AIRDROP_AMOUNT,
     SOLLET_URL,
-    STREAM_STATUS_CANCELED,
+    STREAM_STATUS_CANCELED, TX_FINALITY_CONFIRMED,
 } from "./constants/constants";
 import {_createStream, _cancelStream, _withdrawStream} from './Actions'
 
@@ -52,6 +52,7 @@ function App() {
     const [endDate, setEndDate] = useState(startDate);
     const [endTime, setEndTime] = useState(startTime);
     const [loading, setLoading] = useState(false);
+    const [airdropTxSignature, setAirdropTxSignature] = useState(undefined)
     const [streams, setStreams] = useState(localStorage.streams ? JSON.parse(localStorage.streams) : {})
 
     const connection = useMemo(() => new Connection(network), [network]);
@@ -125,19 +126,29 @@ function App() {
         localStorage.streams = JSON.stringify(streams);
     }, [streams])
 
-    function requestAirdrop() {
+    useEffect(() => {
+        if (airdropTxSignature) {
+            connection.confirmTransaction(airdropTxSignature, TX_FINALITY_CONFIRMED).then(
+                result => {
+                    if (result.value.err) {
+                        toast.error('Airdrop failed!')
+                    } else {
+                        setBalance(balance + AIRDROP_AMOUNT)
+                        toast.success("Airdrop confirmed. Balance updated!")
+                    }
+                }
+            )
+        }
+        console.log('handle airdrop')
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [airdropTxSignature])
+
+    async function requestAirdrop() {
         setLoading(true);
-        (async () => {
-            const signature = await connection.requestAirdrop(selectedWallet.publicKey, AIRDROP_AMOUNT * LAMPORTS_PER_SOL);
-            const result = await connection.confirmTransaction(signature, 'finalized');
-            if (result.value.err) {
-                toast.error('Error requesting airdrop')
-            } else {
-                setLoading(false)
-                setBalance(balance + AIRDROP_AMOUNT)
-                toast.success("Airdropped the airdrop!")
-            }
-        })();
+        const signature = await connection.requestAirdrop(selectedWallet.publicKey, AIRDROP_AMOUNT * LAMPORTS_PER_SOL);
+        setAirdropTxSignature(signature);
+        setLoading(false);
+        toast.success("Airdrop requested! Balance will update soon.")
     }
 
     function validate(element) {
