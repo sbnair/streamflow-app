@@ -1,6 +1,5 @@
-export const DELAY_MINUTES = 10;
 export const SOLLET_URL = 'https://www.sollet.io';
-export const AIRDROP_AMOUNT = 10; //cap on the devnet
+export const AIRDROP_AMOUNT = 10; //10 is the cap on the devnet
 
 export const INSTRUCTION_CREATE_STREAM = 0;
 export const INSTRUCTION_WITHDRAW_STREAM = 1;

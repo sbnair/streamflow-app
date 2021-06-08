@@ -39,7 +39,7 @@ function App() {
     const [amount, setAmount] = useState(undefined);
     const [receiver, setReceiver] = useState(undefined);
     const [startDate, setStartDate] = useState(format(now, "yyyy-MM-dd"));
-    const [startTime, setStartTime] = useState(format(add(now, {minutes: DELAY_MINUTES}), "HH:mm"));
+    const [startTime, setStartTime] = useState(format(add(now, {minutes: 1}), "HH:mm"));
     const [endDate, setEndDate] = useState(startDate);
     const [endTime, setEndTime] = useState(startTime);
     const [loading, setLoading] = useState(false);
