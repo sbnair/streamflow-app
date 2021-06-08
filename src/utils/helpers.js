@@ -97,10 +97,6 @@ export function copyToClipboard(value): void {
     document.body.removeChild(el);
 }
 
-export function getFormattedBalance(amount: number) {
-    return amount.toFixed(4)
-}
-
 export function streamCreated(id: string) {
     const url = window.location.origin + "#" + id;
     swal({
