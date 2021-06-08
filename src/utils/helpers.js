@@ -31,10 +31,10 @@ const DataLayout = BufferLayout.struct([
 export function getDecodedAccountData(buffer: Buffer) {
     const accountData = DataLayout.decode(buffer);
 
-    const start = u64.fromBuffer(accountData.starttime);
-    const end = u64.fromBuffer(accountData.endtime);
-    const amount = u64.fromBuffer(accountData.amount) / LAMPORTS_PER_SOL;
-    const withdrawn = u64.fromBuffer(accountData.withdrawn) / LAMPORTS_PER_SOL;
+    const start = Number(u64.fromBuffer(accountData.starttime));
+    const end = Number(u64.fromBuffer(accountData.endtime));
+    const amount = Number(u64.fromBuffer(accountData.amount)) / LAMPORTS_PER_SOL;
+    const withdrawn = Number(u64.fromBuffer(accountData.withdrawn)) / LAMPORTS_PER_SOL;
     const sender = (new PublicKey(accountData.sender)).toBase58();
     const recipient = (new PublicKey(accountData.recipient)).toBase58();
 
