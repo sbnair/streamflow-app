@@ -27,7 +27,11 @@ import {
     StreamData
 } from "./utils/helpers";
 
-import {AIRDROP_AMOUNT, SOLLET_URL, STREAM_STATUS_CANCELED,} from "./constants/constants";
+import {
+    AIRDROP_AMOUNT,
+    SOLLET_URL,
+    STREAM_STATUS_CANCELED,
+} from "./constants/constants";
 import {_createStream, _cancelStream, _withdrawStream} from './Actions'
 
 import 'react-toastify/dist/ReactToastify.css';
@@ -132,7 +136,7 @@ function App() {
             } else {
                 setLoading(false)
                 setBalance(balance + AIRDROP_AMOUNT)
-                toast.success("Huge airdrop for you!")
+                toast.success("Airdropped the airdrop!")
             }
         })();
     }
