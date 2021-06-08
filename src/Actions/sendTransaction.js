@@ -17,7 +17,7 @@ export default async function sendTransaction(type: number, transaction: Transac
 
         const signed = await wallet.signTransaction(transaction);
         const signature = await connection.sendRawTransaction(signed.serialize());
-        toast.info('Submitted transaction. Awaiting confirmation...');
+        toast.info('Submitted transaction. Awaiting confirmation...', {autoClose:15000});
 
         // can use 'finalized' which gives 100% certainty, but requires much longer waiting.
         await connection.confirmTransaction(signature, 'finalized')

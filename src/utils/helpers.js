@@ -7,6 +7,7 @@ import {
 import {clusterApiUrl, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {getUnixTime} from "date-fns";
 import swal from "sweetalert";
+import {Buffer} from 'buffer/';
 
 export function getDecodedAccountData(buffer: Buffer) {
     const start = Number(buffer.readBigUInt64LE(0));
