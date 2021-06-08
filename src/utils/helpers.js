@@ -29,7 +29,7 @@ const DataLayout = BufferLayout.struct([
 ]);
 
 export function getDecodedAccountData(buffer: Buffer) {
-    const accountData = DataLayout.Decode(buffer);
+    const accountData = DataLayout.decode(buffer);
 
     const start = u64.fromBuffer(accountData.starttime);
     const end = u64.fromBuffer(accountData.endtime);
