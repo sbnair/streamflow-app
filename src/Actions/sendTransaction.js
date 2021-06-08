@@ -3,6 +3,7 @@ import {Connection, Keypair, Transaction} from "@solana/web3.js";
 import ToastrLink from "../Components/ToastrLink";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {INSTRUCTION_CREATE_STREAM} from "../constants/constants";
+import {getExplorerLink} from "../utils/helpers";
 
 export default async function sendTransaction(type: number, transaction: Transaction, connection: Connection, wallet: Wallet, network?: string, pda?: Keypair) {
     try {
@@ -19,13 +20,13 @@ export default async function sendTransaction(type: number, transaction: Transac
         toast.info('Submitted transaction. Awaiting confirmation...');
 
         // can use 'finalized' which gives 100% certainty, but requires much longer waiting.
-        await connection.confirmTransaction(signature, 'confirmed')
-        const transactionUrl = `https://explorer.solana.com/tx/${signature}?cluster=custom&customUrl=${network}`;
+        await connection.confirmTransaction(signature, 'finalized')
+        const transactionUrl = getExplorerLink('tx', signature, network);
         toast.success(<ToastrLink
             url={transactionUrl}
             urlText="View on explorer"
-            nonUrlText="Transaction confirmed!"
-        />, {autoClose: 30000, closeOnClick: false});
+            nonUrlText="Transaction finalized!"
+        />, {autoClose: 20000, closeOnClick: false});
         return true;
     } catch (e) {
         console.warn(e);
