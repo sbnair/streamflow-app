@@ -28,6 +28,7 @@ jobs:
                 npm install @craco/craco --save
                 npm install buffer
                 npm install --save @solana/web3.js
+                npm install --save @solana/spl-token
                 npm install -D tailwindcss@npm:@tailwindcss/postcss7-compat 'postcss@^7' 'autoprefixer@^9'
                 npm run build
 

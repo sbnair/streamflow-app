@@ -4,18 +4,50 @@ import {
     STREAM_STATUS_SCHEDULED,
     STREAM_STATUS_STREAMING
 } from "../constants/constants";
+import BufferLayout from "buffer-layout";
 import {clusterApiUrl, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {u64} from "@solana/spl-token";
 import {getUnixTime} from "date-fns";
 import swal from "sweetalert";
 import {Buffer} from 'buffer/';
 
+export const publicKey = (property = "publicKey"): BufferLayout.Layout => {
+    return BufferLayout.blob(32, property);
+};
+
+export const uint64 = (property = "uint64"): BufferLayout.Layout => {
+    return BufferLayout.blob(8, property);
+};
+
+const DataLayout = BufferLayout.struct([
+    uint64("starttime"),
+    uint64("endtime"),
+    uint64("amount"),
+    uint64("withdrawn"),
+    publicKey("sender"),
+    publicKey("recipient"),
+]);
+
 export function getDecodedAccountData(buffer: Buffer) {
+    const accountData = DataLayout.Decode(buffer);
+
+    const start = u64.fromBuffer(accountData.starttime);
+    const end = u64.fromBuffer(accountData.endtime);
+    const amount = u64.fromBuffer(accountData.amount) / LAMPORTS_PER_SOL;
+    const withdrawn = u64.fromBuffer(accountData.withdrawn) / LAMPORTS_PER_SOL;
+    const sender = (new PublicKey(accountData.sender)).toBase58();
+    const recipient = (new PublicKey(accountData.recipient)).toBase58();
+
+    /*
     const start = Number(buffer.readBigUInt64LE(0));
+    const start = u64.fromBuff
     const end = Number(buffer.readBigUInt64LE(8));
     const amount = Number(buffer.readBigUInt64LE(16)) / LAMPORTS_PER_SOL;
     const withdrawn = Number(buffer.readBigUInt64LE(24)) / LAMPORTS_PER_SOL;
     const sender = (new PublicKey(buffer.slice(32, 64))).toBase58();
     const recipient = (new PublicKey(buffer.slice(64, 96))).toBase58();
+    */
+
     const status = getStreamStatus(Number(start), Number(end), getUnixTime(new Date())) //in milliseconds
 
     return new StreamData(sender, recipient, amount, start, end, withdrawn, status);
