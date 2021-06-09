@@ -139,7 +139,6 @@ function App() {
                 }
             )
         }
-        console.log('handle airdrop')
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [airdropTxSignature])
 
