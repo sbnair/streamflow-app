@@ -68,16 +68,17 @@ function App() {
             });
             selectedWallet.on('disconnect', () => {
                 setConnected(false);
-                setSelectedWallet(undefined);
+                // setSelectedWallet(undefined);
                 toast.info('Disconnected from wallet');
             });
-            selectedWallet.connect();
+            //selectedWallet.connect();
             return () => {
                 selectedWallet.disconnect();
             };
         }
     }, [connection, selectedWallet]);
 
+    //componentWillMount
     useEffect(() => {
         const newStreams = {...streams}
         const streamID = window.location.hash.substring(1);
@@ -118,7 +119,8 @@ function App() {
                 }
             }
         }
-        // this is on purpose, as we want it executed only once (during initialization)
+
+        setSelectedWallet(urlWallet)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -322,7 +324,7 @@ function App() {
                         </div>
                     </div>
                 ) : (
-                    <NotConnected action={() => setSelectedWallet(urlWallet)}/>
+                    <NotConnected action={() => selectedWallet.connect()}/>
                 )}
             </div>
             <ToastContainer hideProgressBar position="bottom-left" limit={4}/>
