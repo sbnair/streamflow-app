@@ -149,7 +149,7 @@ function App() {
         const signature = await connection.requestAirdrop(selectedWallet.publicKey, AIRDROP_AMOUNT * LAMPORTS_PER_SOL);
         setAirdropTxSignature(signature);
         setLoading(false);
-        toast.success("Airdrop requested! Balance will update soon.")
+        toast.success("Airdrop requested!")
     }
 
     function validate(element) {

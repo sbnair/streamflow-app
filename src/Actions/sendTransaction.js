@@ -8,7 +8,7 @@ import {getExplorerLink} from "../utils/helpers";
 export default async function sendTransaction(type: number, transaction: Transaction, connection: Connection, wallet: Wallet, network?: string, pda?: Keypair) {
     try {
         transaction.recentBlockhash = (await connection.getRecentBlockhash()).blockhash;
-        toast.info('Sending request to wallet...');
+        toast.info('Please confirm transaction in your wallet.', {autoClose: 15000});
         transaction.feePayer = wallet.publicKey;
 
         if (type === INSTRUCTION_CREATE_STREAM) {
@@ -31,7 +31,7 @@ export default async function sendTransaction(type: number, transaction: Transac
         return true;
     } catch (e) {
         console.warn(e);
-        //todo log the error somewhere for our reference
+        //todo log these errors somewhere for our reference
         toast.error('Error: ' + e.message);
         return false;
     }
