@@ -13,9 +13,8 @@ export default class Banner extends Component {
                 <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
                     <div className="pr-16 sm:text-center sm:px-16">
                         <p className="font-small text-white">
-                            <span><b>Devnet version. Test freely!</b> Transactions are slower. </span>
-                            Live version coming soon™
-                            {/*<span aria-hidden="true">&rarr;</span>*/}
+                            <b>Devnet version. Test freely! </b>
+                            <span className="hidden lg:inline">Transactions are slower. Live version coming soon™</span>
                         </p>
                     </div>
                     <div
