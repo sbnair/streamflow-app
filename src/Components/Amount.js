@@ -6,7 +6,8 @@ export default function Amount(props: { onChange: void, max: number, value: numb
             </label>
             <div className="mt-1">
                 <input
-                    step={0.001} autoFocus={true}
+                    step="any"
+                    autoFocus={true}
                     type="number"
                     name="amount"
                     id="amount"
