@@ -54,10 +54,10 @@ export function getDecodedAccountData(buffer: Buffer) {
 }
 
 export function getExplorerLink(type: string, id: string, network?: string): string {
-    network = network || clusterApiUrl('mainnet-beta');
+    //todo choose network dynamically, don't force it as an argument
+    network = network || clusterApiUrl('devnet'); //mainnet-beta
     const cluster = getClusterName(network) || `custom&customUrl=${network}`
     return `https://explorer.solana.com/${type}/${id}?cluster=${cluster}`;
-
 }
 
 export function getStreamStatus(start: number, end: number, now: number) {
