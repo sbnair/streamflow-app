@@ -8,6 +8,9 @@ export const INSTRUCTION_CREATE_STREAM = 0;
 export const INSTRUCTION_WITHDRAW_STREAM = 1;
 export const INSTRUCTION_CANCEL_STREAM = 2;
 
+export const EXPLORER_TYPE_TX = "tx";
+export const EXPLORER_TYPE_ADDR = "address";
+
 export const ACC_DATA_OFFSET_WITHDRAWN = 25;
 
 export const STREAM_STATUS_SCHEDULED = "scheduled";
