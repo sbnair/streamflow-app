@@ -257,7 +257,7 @@ function App() {
                                 <span className="block truncate">{selectedWallet.publicKey.toBase58()}</span>
                             </div>
                             <div className="mb-4 clearfix text-white">
-                                <strong className="block">Balance:</strong>
+                                <strong className="block">Balance</strong>
                                 <span>◎{Number(balance).toFixed(4)}</span>
                                 <button type="button" onClick={() => selectedWallet.disconnect()}
                                         className="float-right items-center px-2.5 py-1.5 shadow-sm text-xs  font-medium rounded bg-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
