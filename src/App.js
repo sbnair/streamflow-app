@@ -3,7 +3,6 @@ import {clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@
 import {add, format, getUnixTime} from "date-fns";
 import Wallet from "@project-serum/sol-wallet-adapter";
 import {toast, ToastContainer} from "react-toastify";
-import {ExternalLinkIcon} from "@heroicons/react/outline";
 import NotConnected from "./Pages/NotConnected";
 import {
     Amount,
