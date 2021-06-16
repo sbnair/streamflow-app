@@ -4,9 +4,9 @@ export default function Link(props: { url: string, title?: string, className?: s
     const {url, title, className} = props;
 
     return (
-        <strong className={"text-gray-400 hover:text-white " + className}>
+        <strong className={"text-gray-300 hover:text-white " + className}>
             <a href={url} target="_blank" rel="noopener noreferrer">
-                {title || url} <ExternalLinkIcon className="ml-1 w-4 h-4 inline"/>:
+                {title || url} <sup><ExternalLinkIcon className="w-3 h-3 inline"/></sup>
             </a>
         </strong>
     )

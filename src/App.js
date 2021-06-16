@@ -14,6 +14,7 @@ import {
     Recipient,
     SelectToken,
     Stream,
+    Link,
     Logo,
     Footer,
     ButtonPrimary
@@ -251,11 +252,8 @@ function App() {
                         <div className="mb-8">
                             <Curtain visible={loading}/>
                             <div className="mb-4 text-white">
-                                <strong className="text-gray-400 hover:text-white">
-                                    <a href={getExplorerLink('address', selectedWallet.publicKey.toBase58(), network)}
-                                       target="_blank" rel="noopener noreferrer">
-                                        My Wallet Account <ExternalLinkIcon className="ml-1 w-4 h-4 inline"/>:
-                                    </a></strong>
+                                <Link url={getExplorerLink('address', selectedWallet.publicKey.toBase58(), network)}
+                                      title="My Wallet Address"/>
                                 <span className="block truncate">{selectedWallet.publicKey.toBase58()}</span>
                             </div>
                             <div className="mb-4 clearfix text-white">
