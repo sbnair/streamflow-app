@@ -3,15 +3,17 @@ import {getUnixTime} from "date-fns";
 import Duration from "./Stream/Duration";
 import Progress from "./Stream/Progress";
 import {useEffect, useState} from "react";
-import {StreamData} from "../utils/helpers";
+import {StreamData, getExplorerLink} from "../utils/helpers";
 import {XIcon} from "@heroicons/react/outline";
 import {
+    EXPLORER_TYPE_ADDR,
     STREAM_STATUS_CANCELED,
     STREAM_STATUS_COLOR,
     STREAM_STATUS_COMPLETE,
     STREAM_STATUS_SCHEDULED,
     STREAM_STATUS_STREAMING
 } from "../constants/constants";
+import {Link} from "./index";
 
 export default function Stream(props: { data: StreamData, myAddress: string, id: string, removeStream: void, onStatusUpdate: void, onCancel: void, onWithdraw: void }) {
     const {start, end, withdrawn, amount, receiver, sender, status} = props.data;
@@ -47,9 +49,9 @@ export default function Stream(props: { data: StreamData, myAddress: string, id:
                 </button>
             </div>
             <Duration start={start} end={end}/>
-            <dt>ID</dt>
+                <Link url={getExplorerLink(EXPLORER_TYPE_ADDR, id)} title={"ID"}/>
             <dd className="col-span-2 text-sm text-gray-400 truncate">{id}</dd>
-            <dt>Recipient</dt>
+            <Link url={getExplorerLink(EXPLORER_TYPE_ADDR, receiver)} title={"Recipient"}/>
             <dd className="col-span-2 text-sm text-gray-400 truncate">{receiver}</dd>
             {status === STREAM_STATUS_CANCELED ? (
                 <>
